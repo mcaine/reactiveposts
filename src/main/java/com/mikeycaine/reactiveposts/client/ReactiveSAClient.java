@@ -55,10 +55,11 @@ public class ReactiveSAClient implements Client {
     }
 
     @Override
-    public Flux<Thread> retrieveThreads(Forum forum, int pageId, int endPageId) {
-
-        // TODO
-        return Flux.empty();
+    public Flux<Thread> retrieveThreads(Forum forum, int startPageId, int endPageId) {
+        log.info("Retrieving thrads for " + forum + ", Pages=" + startPageId + "->" + endPageId + ")");
+        int count = validatePageRangeParams(startPageId, endPageId);
+        return Flux.range(startPageId, count)
+            .flatMapSequential(pageId -> Flux.defer(() -> retrieveThreads(forum, pageId)), MAX_CONCURRENT_REQUESTS);
 
     }
 
@@ -327,64 +328,6 @@ public class ReactiveSAClient implements Client {
         thread.setAuthor(author);
 
         return Stream.of(thread);
-
-//        final Optional<String> authorName = postElement
-//            .getElementsByClass("author")
-//            .stream()
-//            .map(Element::ownText)
-//            .findFirst();
-//
-//        final Optional<String> rawPostBodyHtml = postElement
-//            .getElementsByClass("postbody")
-//            .stream()
-//            .map(Element::html)
-//            .findFirst();
-//
-//        final Optional<String> postBodyHtml = cleanBodyHtml(rawPostBodyHtml);
-//
-//        Optional<Integer> optPostId = getPostId(postElement);
-//        if (optPostId.isEmpty()) {
-//            return Stream.empty();
-//        }
-//        int postId = optPostId.get();
-//
-//        Optional<String> postDateString = postElement
-//            .getElementsByClass("postdate")
-//            .stream().map(Element::ownText)
-//            .findFirst();
-//
-//        // eg Feb 1, 2020 05:24
-//        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm");
-//        Optional<LocalDateTime> postDate = Optional.empty();
-//        try {
-//            postDate = postDateString.map(pds -> LocalDateTime.parse(pds, DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm")));
-//        } catch (DateTimeParseException ex) {
-//            log.warn("Can't parse post date");
-//        }
-//
-//        Optional<String> posterId = postElement
-//            .getElementsByTag("td")
-//            .stream()
-//            .filter(el -> el.hasClass("userinfo"))
-//            .flatMap(el -> el.classNames().stream())
-//            .filter(s -> s.startsWith("userid-"))
-//            .map(s -> s.substring(7))
-//            .findFirst();
-//
-//        return (postDate.isPresent()
-//            && authorName.isPresent()
-//            && posterId.isPresent()
-//            && postBodyHtml.isPresent()) ?
-//            Stream.of(new Post(
-//                postId,
-//                pageId,
-//                postDate.get(),
-//                Instant.now(),
-//                authorName.get(),
-//                Integer.valueOf(posterId.get()),
-//                postBodyHtml.get(),
-//                thread))
-//            : Stream.empty();
     }
 
     private Stream<Post> parsePost(Element postElement, Thread thread, int pageId) {

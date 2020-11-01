@@ -22,6 +22,7 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 	private final ForumRepository forumRepository;
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
+	private final AuthorRepository authorRepository;
 	private final Client client;
 
 	@Override
@@ -33,7 +34,14 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 			forum.getSubForums().forEach(forumRepository::save);
 			forumRepository.save(forum);
 		});
-	}
 
+		Forum cspam = forumRepository.findById(269).get();
+
+		List<Thread> cspamThreads = client.retrieveThreads(cspam, 1, 3).collectList().block();
+		cspamThreads.forEach(thread-> {
+			authorRepository.save(thread.getAuthor());
+			threadRepository.save(thread);
+		});
+	}
 }
 

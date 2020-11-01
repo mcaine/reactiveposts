@@ -12,7 +12,7 @@ public interface Client {
     Flux<Forum> retrieveForums();
 
     Flux<Thread> retrieveThreads(Forum forum, int pageId);
-    Flux<Thread> retrieveThreads(Forum forum, int pageId, int endPageId);
+    Flux<Thread> retrieveThreads(Forum forum, int startPageId, int endPageId);
 
     Mono<Integer> latestPageId(Thread thread);
 
