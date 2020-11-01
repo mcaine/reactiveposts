@@ -19,12 +19,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,7 +48,6 @@ public class ReactiveSAClient implements Client {
     public Flux<Thread> retrieveThreads(Forum forum, int pageId) {
         return retrieveBodyAsMono(Urls.forumIndexAddress(forum.getId(), pageId))
             .flatMapMany(body -> parseToThreadsFlux(body, forum, pageId));
-
     }
 
     @Override
@@ -78,8 +74,6 @@ public class ReactiveSAClient implements Client {
         return Flux.range(startPageId, count)
             .flatMapSequential(pageId -> Flux.defer(() -> retrievePosts(thread, pageId)), MAX_CONCURRENT_REQUESTS);
     }
-
-
 
     @Override
     public Mono<Integer> latestPageId(Thread thread) {
@@ -118,7 +112,6 @@ public class ReactiveSAClient implements Client {
     }
 
     private Stream<Forum> forumStreamFromPage(String bodyText) {
-        //log.info("PARSING INDEX PAGE\n" + bodyText);
         Element body = Jsoup.parse(bodyText).body();
         Elements forumElements = body.getElementById("forums").getElementsByClass("forum");
 
@@ -298,7 +291,6 @@ public class ReactiveSAClient implements Client {
         if (authorElement.isEmpty()) {
             return Stream.empty();
         }
-
 
         String authorName = authorElement.get().text();
         String authorIdHref = authorElement.get().attr("href");
