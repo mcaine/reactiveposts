@@ -34,7 +34,7 @@ public class ClientTestUtils {
 		return post -> log.info("\n" + post);
 	}
 
-	void logForumsFlux(Flux<Forum> forumFlux) {
+	public void logForumsFlux(Flux<Forum> forumFlux) {
 		CountDownLatch finishedSignal = new CountDownLatch(1);
 
 		forumFlux
@@ -59,8 +59,5 @@ public class ClientTestUtils {
 		} catch (InterruptedException e) {
 			fail();
 		}
-
 	}
-
-
 }
