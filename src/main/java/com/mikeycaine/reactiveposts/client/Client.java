@@ -1,15 +1,24 @@
 package com.mikeycaine.reactiveposts.client;
 
+import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Post;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface Client<P,F> {
+import com.mikeycaine.reactiveposts.model.Thread;
 
-    Mono<Integer> latestPageId(int threadId);
+public interface Client {
 
-    Flux<P> retrievePosts(int threadId, int pageId);
+    Flux<Forum> retrieveForums();
 
-    Flux<P> retrievePosts(int threadId, int startPageId, int endPageId);
+    Flux<Thread> retrieveThreads(Forum forum, int pageId);
+    Flux<Thread> retrieveThreads(Forum forum, int pageId, int endPageId);
 
-    Flux<F> retrieveForums();
+    Mono<Integer> latestPageId(Thread thread);
+
+    Flux<Post> retrievePosts(Thread thread, int pageId);
+
+    Flux<Post> retrievePosts(Thread thread, int startPageId, int endPageId);
+
+
 }

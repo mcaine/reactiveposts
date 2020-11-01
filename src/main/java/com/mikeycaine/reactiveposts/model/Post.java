@@ -16,18 +16,26 @@ public class Post {
 
 	}
 
-	public Post(int postId, int pageId, LocalDateTime postDate, Instant retrievedDate, String authorName, Integer authorId, String postHtml, int threadId) {
+	public Post(int postId, int pageNum, LocalDateTime postDate, Instant retrievedDate, String authorName, Integer authorId, String html, Thread thread) {
+		this.id = postId;
+		this.pageNum = pageNum;
+		this.postDate = postDate;
+		this.retrievedDate = retrievedDate;
+		this.authorName = authorName;
+		this.authorId = authorId;
+		this.html = html;
+		this.thread = thread;
 	}
 
 	@Id
 	@Getter
 	@Setter
 	//@Column
-	private Long id;
+	private Integer id;
 
 	@Getter @Setter
 	@Column
-	private Long pageNum;
+	private Integer pageNum;
 
 	@Getter @Setter
 	@Column
@@ -45,7 +53,7 @@ public class Post {
 
 	@Getter @Setter
 	@Column
-	private Long authorId;
+	private Integer authorId;
 
 	@Getter @Setter
 	@Column(columnDefinition = "TEXT")
@@ -53,8 +61,8 @@ public class Post {
 
 	@Getter @Setter
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "forum_thread_id", nullable = false)
-	private Thread forumThread;
+	@JoinColumn(nullable = false)
+	private Thread thread;
 
 
 

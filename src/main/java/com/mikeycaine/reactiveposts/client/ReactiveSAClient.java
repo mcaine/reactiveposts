@@ -26,29 +26,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.mikeycaine.reactiveposts.model.Thread;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class ReactiveSAClient implements Client<Post, Forum> {
+public class ReactiveSAClient implements Client {
     private final static int MAX_REQUEST_PAGE_COUNT = 100;
     private final static int MAX_CONCURRENT_REQUESTS = 1;
+
     private final WebClient webClient;
-
-    @Override
-    public Flux<Post> retrievePosts(int threadId, int pageId) {
-        log.info("Retrieving posts for Thread=" + threadId + ", Page=" + pageId + ")");
-        validatePageIdParam(pageId);
-        return retrieveBodyAsMono(Urls.pageAddress(threadId, pageId))
-            .flatMapMany(body -> parseToPostsFlux(body, threadId, pageId));
-    }
-
-    @Override
-    public Flux<Post> retrievePosts(int threadId, int startPageId, int endPageId) {
-        log.info("Retrieving posts for Thread=" + threadId + ", Pages=" + startPageId + "->" + endPageId + ")");
-        int count = validatePageRangeParams(startPageId, endPageId);
-        return Flux.range(startPageId, count)
-            .flatMapSequential(pageId -> Flux.defer(() -> retrievePosts(threadId, pageId)), MAX_CONCURRENT_REQUESTS);
-    }
 
     @Override
     public Flux<Forum> retrieveForums() {
@@ -57,8 +44,41 @@ public class ReactiveSAClient implements Client<Post, Forum> {
     }
 
     @Override
-    public Mono<Integer> latestPageId(int threadId) {
-        return retrieveBodyAsMono(Urls.pageAddress(threadId, 1L))
+    public Flux<Thread> retrieveThreads(Forum forum, int pageId) {
+        return retrieveBodyAsMono(Urls.forumIndexAddress(forum.getId(), pageId))
+            .flatMapMany(body -> parseToThreadsFlux(body, forum, pageId));
+
+    }
+
+    @Override
+    public Flux<Thread> retrieveThreads(Forum forum, int pageId, int endPageId) {
+
+        // TODO
+        return Flux.empty();
+
+    }
+
+    @Override
+    public Flux<Post> retrievePosts(Thread thread, int pageId) {
+        log.info("Retrieving posts for " + thread.getId() + ", Page=" + pageId + ")");
+        validatePageIdParam(pageId);
+        return retrieveBodyAsMono(Urls.pageAddress(thread.getId(), pageId))
+            .flatMapMany(body -> parseToPostsFlux(body, thread, pageId));
+    }
+
+    @Override
+    public Flux<Post> retrievePosts(Thread thread, int startPageId, int endPageId) {
+        log.info("Retrieving posts for " + thread + ", Pages=" + startPageId + "->" + endPageId + ")");
+        int count = validatePageRangeParams(startPageId, endPageId);
+        return Flux.range(startPageId, count)
+            .flatMapSequential(pageId -> Flux.defer(() -> retrievePosts(thread, pageId)), MAX_CONCURRENT_REQUESTS);
+    }
+
+
+
+    @Override
+    public Mono<Integer> latestPageId(Thread thread) {
+        return retrieveBodyAsMono(Urls.pageAddress(thread.getId(), 1))
             .flatMap(this::parseLatestPageId);
     }
 
@@ -148,33 +168,62 @@ public class ReactiveSAClient implements Client<Post, Forum> {
         });
     }
 
-    private Flux<Post> parseToPostsFlux(String bodyText, int threadId, int pageId) {
-        return Flux.fromStream(postStreamFromPage(bodyText, threadId, pageId));
+    private Flux<Post> parseToPostsFlux(String bodyText, Thread thread, int pageId) {
+        return Flux.fromStream(postStreamFromPage(bodyText, thread, pageId));
     }
 
-    private Stream<Post> postStreamFromPage(String bodyText, int threadId, int pageId) {
-        return threadElementFromResponseBody(bodyText, threadId)
-            .map(threadElement -> postsFromThreadElement(threadElement, threadId, pageId))
+    private Flux<Thread> parseToThreadsFlux(String bodyText, Forum forum, int pageId) {
+        return Flux.fromStream(threadStreamFromPage(bodyText, forum, pageId));
+    }
+
+    private Stream<Post> postStreamFromPage(String bodyText, Thread thread, int pageId) {
+        return threadElementFromResponseBody(bodyText, thread)
+            .map(threadElement -> postsFromThreadElement(threadElement, thread, pageId))
             .orElse(Stream.empty());
     }
 
-    private Optional<Element> threadElementFromResponseBody(String body, int expectedThreadId) {
+    private Stream<Thread> threadStreamFromPage(String bodyText, Forum forum, int pageId) {
+        return forumElementFromResponseBody(bodyText)
+            .map(forumElement -> threadsFromForumElement(forumElement, forum, pageId))
+            .orElse(Stream.empty());
+    }
+
+
+    private Optional<Element> threadElementFromResponseBody(String body, Thread thread) {
         if (null == body || body.isEmpty() || body.isBlank()) {
             return Optional.empty();
         }
         Element bodyElement = Jsoup.parse(body).body();
         Element threadElement = bodyElement.getElementById("thread");
         if (threadElement != null) {
-            checkThreadId(threadElement, expectedThreadId);
+            checkThreadId(threadElement, thread.getId());
             return Optional.of(threadElement);
         } else {
             return Optional.empty();
         }
     }
 
-    private Stream<Post> postsFromThreadElement(Element threadElement, int threadId, int pageId) {
+    private Optional<Element> forumElementFromResponseBody(String body) {
+        if (null == body || body.isEmpty() || body.isBlank()) {
+            return Optional.empty();
+        }
+        Element bodyElement = Jsoup.parse(body).body();
+        Element threadElement = bodyElement.getElementById("forum");
+        if (threadElement != null) {
+            return Optional.of(threadElement);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Stream<Post> postsFromThreadElement(Element threadElement, Thread thread, int pageId) {
         return threadElement.getElementsByClass("post").stream()
-            .flatMap(postElement -> parsePost(postElement, threadId, pageId));
+            .flatMap(postElement -> parsePost(postElement, thread, pageId));
+    }
+
+    private Stream<Thread> threadsFromForumElement(Element forumElement, Forum forum, int pageId) {
+        return forumElement.getElementsByClass("thread").stream()
+            .flatMap(threadElement -> parseThread(threadElement, forum, pageId));
     }
 
     private void checkThreadId(Element thread, long threadId) {
@@ -197,7 +246,87 @@ public class ReactiveSAClient implements Client<Post, Forum> {
         }
     }
 
-    private Stream<Post> parsePost(Element postElement, int threadId, int pageId) {
+    private Stream<Thread> parseThread(Element threadElement, Forum forum, int pageId) {
+        Optional<Integer> optThreadId = getThreadId(threadElement);
+        if (optThreadId.isEmpty()) {
+            return Stream.empty();
+        }
+
+        int threadId = optThreadId.get();
+
+        Optional<String> optThreadTitle = threadElement
+            .getElementsByClass("info").stream().flatMap(info -> info.getElementsByTag("a").stream()).findFirst().map(el -> el.text());
+        if (optThreadTitle.isEmpty()) {
+            return Stream.empty();
+        }
+        String threadTitle = optThreadTitle.get();
+
+        Thread thread = new Thread();
+        thread.setId(threadId);
+        thread.setName(threadTitle);
+
+        return Stream.of(thread);
+
+//        final Optional<String> authorName = postElement
+//            .getElementsByClass("author")
+//            .stream()
+//            .map(Element::ownText)
+//            .findFirst();
+//
+//        final Optional<String> rawPostBodyHtml = postElement
+//            .getElementsByClass("postbody")
+//            .stream()
+//            .map(Element::html)
+//            .findFirst();
+//
+//        final Optional<String> postBodyHtml = cleanBodyHtml(rawPostBodyHtml);
+//
+//        Optional<Integer> optPostId = getPostId(postElement);
+//        if (optPostId.isEmpty()) {
+//            return Stream.empty();
+//        }
+//        int postId = optPostId.get();
+//
+//        Optional<String> postDateString = postElement
+//            .getElementsByClass("postdate")
+//            .stream().map(Element::ownText)
+//            .findFirst();
+//
+//        // eg Feb 1, 2020 05:24
+//        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm");
+//        Optional<LocalDateTime> postDate = Optional.empty();
+//        try {
+//            postDate = postDateString.map(pds -> LocalDateTime.parse(pds, DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm")));
+//        } catch (DateTimeParseException ex) {
+//            log.warn("Can't parse post date");
+//        }
+//
+//        Optional<String> posterId = postElement
+//            .getElementsByTag("td")
+//            .stream()
+//            .filter(el -> el.hasClass("userinfo"))
+//            .flatMap(el -> el.classNames().stream())
+//            .filter(s -> s.startsWith("userid-"))
+//            .map(s -> s.substring(7))
+//            .findFirst();
+//
+//        return (postDate.isPresent()
+//            && authorName.isPresent()
+//            && posterId.isPresent()
+//            && postBodyHtml.isPresent()) ?
+//            Stream.of(new Post(
+//                postId,
+//                pageId,
+//                postDate.get(),
+//                Instant.now(),
+//                authorName.get(),
+//                Integer.valueOf(posterId.get()),
+//                postBodyHtml.get(),
+//                thread))
+//            : Stream.empty();
+    }
+
+    private Stream<Post> parsePost(Element postElement, Thread thread, int pageId) {
         final Optional<String> authorName = postElement
             .getElementsByClass("author")
             .stream()
@@ -253,7 +382,7 @@ public class ReactiveSAClient implements Client<Post, Forum> {
                 authorName.get(),
                 Integer.valueOf(posterId.get()),
                 postBodyHtml.get(),
-                threadId))
+                thread))
             : Stream.empty();
     }
 
@@ -280,5 +409,16 @@ public class ReactiveSAClient implements Client<Post, Forum> {
             .findFirst();
 
         return parsePostIdString(postIdString);
+    }
+
+    private Optional<Integer> getThreadId(Element threadElement) {
+        String idAttr = threadElement.attr("id");
+        if (null == idAttr || idAttr.length() == 0) {
+            return Optional.empty();
+        } else if (idAttr.startsWith("thread")) {
+            String idText = idAttr.substring(6);
+            return Optional.of(Integer.parseInt(idText));
+        }
+        return Optional.empty();
     }
 }

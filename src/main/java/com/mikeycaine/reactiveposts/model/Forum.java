@@ -1,8 +1,6 @@
 package com.mikeycaine.reactiveposts.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Collections;
@@ -14,6 +12,8 @@ import java.util.stream.Stream;
 
 @Entity
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Forum {
 
 	public Forum(Integer forumId, String forumName, Set<Forum> subForums) {
@@ -29,10 +29,13 @@ public class Forum {
 
 	@Getter @Setter
 	@Id
+	@EqualsAndHashCode.Include
+	@ToString.Include
 	private Integer id;
 
 	@Getter @Setter
 	@Column
+	@ToString.Include
 	private String name;
 
 	@Getter

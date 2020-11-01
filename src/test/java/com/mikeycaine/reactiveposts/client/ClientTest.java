@@ -1,18 +1,13 @@
 package com.mikeycaine.reactiveposts.client;
 
-import com.mikeycaine.reactiveposts.model.Forum;
-import com.mikeycaine.reactiveposts.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
-import java.util.concurrent.CountDownLatch;
-
 @Slf4j
 public class ClientTest extends ClientTestUtils {
 
-	private final Client<Post, Forum> client = new ReactiveSAClient(new WebClientConfig().webClient());
+	private final Client client = new ReactiveSAClient(new WebClientConfig().webClient());
 
 	@Test
 	public void testRetrieveForums() {
@@ -28,5 +23,4 @@ public class ClientTest extends ClientTestUtils {
 	public void testPrintForums() throws InterruptedException {
 		logForumsFlux(client.retrieveForums());
 	}
-
 }
