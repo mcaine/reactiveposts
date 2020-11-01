@@ -26,13 +26,7 @@ public class ClientTest extends ClientTestUtils {
 
 	@Test
 	public void testPrintForums() throws InterruptedException {
-		CountDownLatch finishedSignal = new CountDownLatch(1);
-
-
-		client.retrieveForums()
-			.subscribe(printForum(), errorHandler(finishedSignal), signalCompleteTo(finishedSignal));
-
-		waitForLatch(finishedSignal);
+		logForumsFlux(client.retrieveForums());
 	}
 
 }
