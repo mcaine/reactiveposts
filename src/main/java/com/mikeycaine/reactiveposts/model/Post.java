@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 
 import javax.persistence.*;
@@ -11,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
+@ToString
 public class Post {
 	public Post() {
 

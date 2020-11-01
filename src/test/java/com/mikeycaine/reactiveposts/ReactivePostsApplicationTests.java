@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts;
 
 import com.mikeycaine.reactiveposts.client.Client;
+import com.mikeycaine.reactiveposts.client.ClientTestUtils;
 import com.mikeycaine.reactiveposts.model.*;
 import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @Slf4j
-class ReactivePostsApplicationTests {
+class ReactivePostsApplicationTests extends ClientTestUtils  {
 
 	final int CSPAM_FORUM_ID = 269;
 
@@ -52,37 +54,16 @@ class ReactivePostsApplicationTests {
 		if (cspam.isPresent()) {
 			List<Thread> threadList = client.retrieveThreads(cspam.get(), 1).collectList().block();
 			Thread thread = threadList.get(0);
-			int latestPageId = client.latestPageId(thread).block();
-			log.info("Latest page for " + thread + " is " + latestPageId);
+			int latestPage = thread.getMaxPageNumber();
+			log.info("Latest page for " + thread + " is " + latestPage);
+			int pageToStart = Math.max(1, latestPage - PAGES_TO_GET + 1);
+
+			Flux<Post> postFlux = client.retrievePosts(thread, pageToStart, latestPage);
+			logPostsFlux(postFlux);
+
+
 		} else {
 			fail();
 		}
-
-
-
-
-//
-//
-//		Thread thread = new Thread();
-//		thread.setId(THREAD_ID);
-//		thread.setName("Oct2020 trumo (INIT DATA)");
-//		thread.setForum(forum);
-//		forum.getThreads().add(thread);
-//
-//		forumRepository.save(forum);
-//		threadRepository.save(thread);
-//
-//		log.info("Reading the last {} pages of thread {}...", PAGES_TO_GET, THREAD_ID);
-//
-//		AtomicInteger savedCount = new AtomicInteger(0);
-//
-//		forumRepository.deleteAll();
-//
-//		client.latestPageId(thread).flatMapMany(latestPageId -> {
-//			log.info("Latest page of thread {} is {}", THREAD_ID, latestPageId);
-//			int pageToStart = Math.max(1, latestPageId - PAGES_TO_GET + 1);
-//			return client.retrievePosts(thread, pageToStart, latestPageId);
-//		}).subscribe(postRepository::save);
 	}
-
 }

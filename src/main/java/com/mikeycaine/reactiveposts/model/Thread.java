@@ -25,4 +25,14 @@ public class Thread {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
 	private Forum forum;
+
+	@Getter
+	@Setter
+	private int maxPageNumber;
+
+	@Getter
+	@Setter
+	@ManyToOne
+	@JoinColumn(nullable = false)
+	private Author author;
 }

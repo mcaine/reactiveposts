@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.client;
 
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
@@ -26,14 +27,11 @@ public class ClientTestUtils {
 		};
 	}
 
-	void waitForLatch(CountDownLatch latch) throws InterruptedException {
-		log.info("Waiting for latch");
-		latch.await();
-		log.info("Got latch");
-	}
-
 	Consumer<Forum> printForum() {
 		return forum -> log.info("\n" + forum.prettyPrint());
+	}
+	Consumer<Post> printPost() {
+		return post -> log.info("\n" + post);
 	}
 
 	void logForumsFlux(Flux<Forum> forumFlux) {
@@ -43,7 +41,21 @@ public class ClientTestUtils {
 			.subscribe(printForum(), errorHandler(finishedSignal), signalCompleteTo(finishedSignal));
 
 		try {
-			waitForLatch(finishedSignal);
+			finishedSignal.await();
+		} catch (InterruptedException e) {
+			fail();
+		}
+
+	}
+
+	public void logPostsFlux(Flux<Post> postsFlux) {
+		CountDownLatch finishedSignal = new CountDownLatch(1);
+
+		postsFlux
+			.subscribe(printPost(), errorHandler(finishedSignal), signalCompleteTo(finishedSignal));
+
+		try {
+			finishedSignal.await();
 		} catch (InterruptedException e) {
 			fail();
 		}

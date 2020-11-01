@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.client;
 
+import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -142,6 +146,12 @@ public class ReactiveSAClient implements Client {
         return matcher.find() ? Optional.of(Integer.parseInt(matcher.group(2))) : Optional.empty();
     }
 
+    static Optional<Integer> userIdFromHref(String href) {
+        Pattern pattern = Pattern.compile("(.*)userid=(\\d+)");
+        Matcher matcher = pattern.matcher(href);
+        return matcher.find() ? Optional.of(Integer.parseInt(matcher.group(2))) : Optional.empty();
+    }
+
     private Mono<Integer> parseLatestPageId(String bodyText) {
         return lastPageNumber(Jsoup.parse(bodyText).body())
             .map(Mono::just)
@@ -251,7 +261,6 @@ public class ReactiveSAClient implements Client {
         if (optThreadId.isEmpty()) {
             return Stream.empty();
         }
-
         int threadId = optThreadId.get();
 
         Optional<String> optThreadTitle = threadElement
@@ -261,19 +270,61 @@ public class ReactiveSAClient implements Client {
         }
         String threadTitle = optThreadTitle.get();
 
-        // TODO
         // Thread page count
+        Stream<Integer> pageNumbers = threadElement
+            .getElementsByClass("pagenumber")
+            .stream()
+            .map(Element::text)
+            .filter(s -> !s.startsWith("Last"))
+            .flatMap(s -> {
+                try {
+                    return Stream.of(Integer.parseInt(s));
+                } catch (NumberFormatException nfe) {
+                }
+                return Stream.empty();
+            });
+
+        OptionalInt optMaxPageNumber = pageNumbers.mapToInt(i -> i).max();
+        if (optMaxPageNumber.isEmpty()) {
+            return Stream.empty();
+        }
+        int maxPageNumber = optMaxPageNumber.getAsInt();
+
         // Thread author
-        // Thread replies count
-        // Thread views count
-        // Thread Rating
-        // Killed by time
-        // Killed by name
+        Optional<Element> authorElement = threadElement.getElementsByClass("author").stream()
+            .flatMap(a -> a.getElementsByTag("a").stream()).findFirst();
+
+        if (authorElement.isEmpty()) {
+            return Stream.empty();
+        }
+
+
+        String authorName = authorElement.get().text();
+        String authorIdHref = authorElement.get().attr("href");
+
+        if (null == authorName || authorName.isEmpty()) {
+            return Stream.empty();
+        }
+
+        if (null == authorIdHref || authorIdHref.isEmpty()) {
+            return Stream.empty();
+        }
+
+        Optional<Integer> optAuthorId = userIdFromHref(authorIdHref);
+        if (optAuthorId.isEmpty()) {
+            return Stream.empty();
+        }
+
+        Author author = new Author();
+        author.setId(optAuthorId.get());
+        author.setName(authorName);
 
         Thread thread = new Thread();
         thread.setId(threadId);
         thread.setName(threadTitle);
+        thread.setMaxPageNumber(maxPageNumber);
         thread.setForum(forum);
+        thread.setAuthor(author);
 
         return Stream.of(thread);
 
