@@ -261,9 +261,19 @@ public class ReactiveSAClient implements Client {
         }
         String threadTitle = optThreadTitle.get();
 
+        // TODO
+        // Thread page count
+        // Thread author
+        // Thread replies count
+        // Thread views count
+        // Thread Rating
+        // Killed by time
+        // Killed by name
+
         Thread thread = new Thread();
         thread.setId(threadId);
         thread.setName(threadTitle);
+        thread.setForum(forum);
 
         return Stream.of(thread);
 
