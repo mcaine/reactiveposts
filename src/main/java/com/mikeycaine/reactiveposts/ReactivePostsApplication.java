@@ -9,12 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class ReactivePostsApplication {
-
-	@Autowired
-	Client client;
-
 	public static void main(String[] args) {
 		SpringApplication.run(ReactivePostsApplication.class, args);
 	}
-
 }

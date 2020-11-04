@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
@@ -33,6 +34,9 @@ class ReactivePostsApplicationTests extends ClientTestUtils  {
 	PostRepository postRepository;
 
 	@Autowired
+	AuthorRepository authorRepository;
+
+	@Autowired
 	Client client;
 
 	@Test
@@ -42,7 +46,7 @@ class ReactivePostsApplicationTests extends ClientTestUtils  {
 	@Test
 	void testCspamExists() {
 		Optional<Forum> cspam = forumRepository.findById(CSPAM_FORUM_ID);
-		Assertions.assertTrue(cspam.isPresent(), "C-SPAM is missing WTF");
+		assertTrue(cspam.isPresent(), "C-SPAM is missing WTF");
 	}
 
 	@Test
