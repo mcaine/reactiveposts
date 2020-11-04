@@ -23,8 +23,9 @@ public class GetTestData implements Directories {
         Arrays.stream(threadPageSpecs).forEach(ThreadPageSpec::cacheThreadPage);
 
         IndexPageSpec[] indexPageSpecs = {
-        	IndexPageSpec.of(161),  // Goons with Spoons
-	        IndexPageSpec.of(192)   // Inspect your gadgets
+        	IndexPageSpec.of(161,  4),  // Goons with Spoons
+	        IndexPageSpec.of(192, 5),   // Inspect your gadgets
+	        IndexPageSpec.of(273, 6)    // GBS
         };
 
 		Arrays.stream(indexPageSpecs).forEach(IndexPageSpec::cacheIndexPage);

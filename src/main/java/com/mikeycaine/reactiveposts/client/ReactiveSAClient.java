@@ -1,5 +1,8 @@
 package com.mikeycaine.reactiveposts.client;
 
+import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
+import com.mikeycaine.reactiveposts.client.content.MainForumIndexContent;
+import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
 import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
@@ -39,7 +42,7 @@ public class ReactiveSAClient implements Client {
 	@Override
 	public Flux<Forum> retrieveForums() {
 		return mainForumIndexContent()
-			.flatMapMany(ForumPageUtils::parseMainForumIndexPage);
+			.flatMapMany(MainForumIndexContent::parseMainForumIndexPage);
 	}
 
 	@Override
@@ -103,6 +106,14 @@ public class ReactiveSAClient implements Client {
 	    return retrieveBodyAsMono(Urls.postsPageAddress(thread.getId(), pageId))
             .map(PostsPageContent::new);
     }
+
+
+
+
+
+
+
+
 
 //    private void validatePageIdParam(int pageId) {
 //        if (pageId < 1 || pageId > 100000) {

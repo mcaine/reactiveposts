@@ -1,9 +1,7 @@
-package com.mikeycaine.reactiveposts.client;
-
-import reactor.core.publisher.Mono;
+package com.mikeycaine.reactiveposts.client.content;
 
 abstract class AbstractContent implements PageContent {
-	final private String content;
+	final protected String content;
 
 	AbstractContent(String content) {
 		this.content = content;

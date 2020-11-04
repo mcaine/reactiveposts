@@ -1,4 +1,4 @@
-package com.mikeycaine.reactiveposts.client;
+package com.mikeycaine.reactiveposts.client.content;
 
 import reactor.core.publisher.Mono;
 
