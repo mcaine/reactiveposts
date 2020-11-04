@@ -123,6 +123,8 @@ public class ForumThreadsIndexContent extends AbstractContent {
 		thread.setForum(forum);
 		thread.setAuthor(author);
 
+		author.getThreads().add(thread);
+
 		return Stream.of(thread);
 	}
 
