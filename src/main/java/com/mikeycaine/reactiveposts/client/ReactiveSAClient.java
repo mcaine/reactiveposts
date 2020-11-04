@@ -45,10 +45,12 @@ public class ReactiveSAClient implements Client {
 			.flatMapMany(MainForumIndexContent::parseMainForumIndexPage);
 	}
 
+	// HERE
 	@Override
 	public Flux<Thread> retrieveThreads(Forum forum, int pageId) {
 		return forumThreadsIndexContent(forum, pageId)
-			.flatMapMany(content -> parseToThreadsFlux(content, forum, pageId));
+			//.flatMapMany(content -> parseToThreadsFlux(content, forum, pageId));
+			.flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux);
 	}
 
 	@Override
@@ -97,9 +99,9 @@ public class ReactiveSAClient implements Client {
 			.map(MainForumIndexContent::new);
 	}
 
-	private Mono<ForumThreadsIndexContent> forumThreadsIndexContent(Forum forum, int pageId) {
-		return retrieveBodyAsMono(Urls.forumThreadsIndexAddress(forum.getId(), pageId))
-			.map(ForumThreadsIndexContent::new);
+	private Mono<ForumThreadsIndexContent> forumThreadsIndexContent(Forum forum, int pageNum) {
+		return retrieveBodyAsMono(Urls.forumThreadsIndexAddress(forum.getId(), pageNum))
+			.map(body -> new ForumThreadsIndexContent(body, forum, pageNum));
 	}
 
 	private Mono<PostsPageContent> postsPageContent(Thread thread, int pageId) {
@@ -166,11 +168,11 @@ public class ReactiveSAClient implements Client {
 //        return matcher.find() ? Optional.of(Integer.parseInt(matcher.group(2))) : Optional.empty();
 //    }
 //
-	static Optional<Integer> userIdFromHref(String href) {
-		Pattern pattern = Pattern.compile("(.*)userid=(\\d+)");
-		Matcher matcher = pattern.matcher(href);
-		return matcher.find() ? Optional.of(Integer.parseInt(matcher.group(2))) : Optional.empty();
-	}
+//	static Optional<Integer> userIdFromHref(String href) {
+//		Pattern pattern = Pattern.compile("(.*)userid=(\\d+)");
+//		Matcher matcher = pattern.matcher(href);
+//		return matcher.find() ? Optional.of(Integer.parseInt(matcher.group(2))) : Optional.empty();
+//	}
 
 	//
 //    private Mono<Integer> parseLatestPageId(String bodyText) {
@@ -203,9 +205,9 @@ public class ReactiveSAClient implements Client {
 //        return Flux.fromStream(postStreamFromPage(bodyText, thread, pageId));
 //    }
 //
-	private Flux<Thread> parseToThreadsFlux(ForumThreadsIndexContent content, Forum forum, int pageId) {
-		return Flux.fromStream(threadStreamFromPage(content, forum, pageId));
-	}
+//	private Flux<Thread> parseToThreadsFlux(ForumThreadsIndexContent content, Forum forum, int pageId) {
+//		return Flux.fromStream(threadStreamFromPage(content, forum, pageId));
+//	}
 
 	//
 //    private Stream<Post> postStreamFromPage(String bodyText, Thread thread, int pageId) {
@@ -214,11 +216,11 @@ public class ReactiveSAClient implements Client {
 //            .orElse(Stream.empty());
 //    }
 //
-	private Stream<Thread> threadStreamFromPage(ForumThreadsIndexContent content, Forum forum, int pageId) {
-		return forumElementFromResponseBody(content)
-			.map(forumElement -> threadsFromForumElement(forumElement, forum, pageId))
-			.orElse(Stream.empty());
-	}
+//	private Stream<Thread> threadStreamFromPage(ForumThreadsIndexContent content, Forum forum, int pageId) {
+//		return forumElementFromResponseBody(content)
+//			.map(forumElement -> threadsFromForumElement(forumElement, forum, pageId))
+//			.orElse(Stream.empty());
+//	}
 
 	//
 //
@@ -236,20 +238,20 @@ public class ReactiveSAClient implements Client {
 //        }
 //    }
 //
-	private Optional<Element> forumElementFromResponseBody(ForumThreadsIndexContent content) {
-		final String body = content.content();
-
-		if (null == body || body.isEmpty() || body.isBlank()) {
-			return Optional.empty();
-		}
-		Element bodyElement = Jsoup.parse(body).body();
-		Element threadElement = bodyElement.getElementById("forum");
-		if (threadElement != null) {
-			return Optional.of(threadElement);
-		} else {
-			return Optional.empty();
-		}
-	}
+//	private Optional<Element> forumElementFromResponseBody(ForumThreadsIndexContent content) {
+//		final String body = content.content();
+//
+//		if (null == body || body.isEmpty() || body.isBlank()) {
+//			return Optional.empty();
+//		}
+//		Element bodyElement = Jsoup.parse(body).body();
+//		Element threadElement = bodyElement.getElementById("forum");
+//		if (threadElement != null) {
+//			return Optional.of(threadElement);
+//		} else {
+//			return Optional.empty();
+//		}
+//	}
 
 	//
 //    private Stream<Post> postsFromThreadElement(Element threadElement, Thread thread, int pageId) {
@@ -257,10 +259,10 @@ public class ReactiveSAClient implements Client {
 //            .flatMap(postElement -> parsePost(postElement, thread, pageId));
 //    }
 //
-	private Stream<Thread> threadsFromForumElement(Element forumElement, Forum forum, int pageId) {
-		return forumElement.getElementsByClass("thread").stream()
-			.flatMap(threadElement -> parseThread(threadElement, forum, pageId));
-	}
+//	private Stream<Thread> threadsFromForumElement(Element forumElement, Forum forum, int pageId) {
+//		return forumElement.getElementsByClass("thread").stream()
+//			.flatMap(threadElement -> parseThread(threadElement, forum, pageId));
+//	}
 
 	//
 //    private void checkThreadId(Element thread, long threadId) {
@@ -284,77 +286,77 @@ public class ReactiveSAClient implements Client {
 	}
 
 	//
-	private Stream<Thread> parseThread(Element threadElement, Forum forum, int pageId) {
-		Optional<Integer> optThreadId = getThreadId(threadElement);
-		if (optThreadId.isEmpty()) {
-			return Stream.empty();
-		}
-		int threadId = optThreadId.get();
-
-		Optional<String> optThreadTitle = threadElement
-			.getElementsByClass("info").stream().flatMap(info -> info.getElementsByTag("a").stream()).findFirst().map(el -> el.text());
-		if (optThreadTitle.isEmpty()) {
-			return Stream.empty();
-		}
-		String threadTitle = optThreadTitle.get();
-
-		// Thread page count
-		Stream<Integer> pageNumbers = threadElement
-			.getElementsByClass("pagenumber")
-			.stream()
-			.map(Element::text)
-			.filter(s -> !s.startsWith("Last"))
-			.flatMap(s -> {
-				try {
-					return Stream.of(Integer.parseInt(s));
-				} catch (NumberFormatException nfe) {
-				}
-				return Stream.empty();
-			});
-
-		OptionalInt optMaxPageNumber = pageNumbers.mapToInt(i -> i).max();
-		if (optMaxPageNumber.isEmpty()) {
-			return Stream.empty();
-		}
-		int maxPageNumber = optMaxPageNumber.getAsInt();
-
-		// Thread author
-		Optional<Element> authorElement = threadElement.getElementsByClass("author").stream()
-			.flatMap(a -> a.getElementsByTag("a").stream()).findFirst();
-
-		if (authorElement.isEmpty()) {
-			return Stream.empty();
-		}
-
-		String authorName = authorElement.get().text();
-		String authorIdHref = authorElement.get().attr("href");
-
-		if (null == authorName || authorName.isEmpty()) {
-			return Stream.empty();
-		}
-
-		if (null == authorIdHref || authorIdHref.isEmpty()) {
-			return Stream.empty();
-		}
-
-		Optional<Integer> optAuthorId = userIdFromHref(authorIdHref);
-		if (optAuthorId.isEmpty()) {
-			return Stream.empty();
-		}
-
-		Author author = new Author();
-		author.setId(optAuthorId.get());
-		author.setName(authorName);
-
-		Thread thread = new Thread();
-		thread.setId(threadId);
-		thread.setName(threadTitle);
-		thread.setMaxPageNumber(maxPageNumber);
-		thread.setForum(forum);
-		thread.setAuthor(author);
-
-		return Stream.of(thread);
-	}
+//	private Stream<Thread> parseThread(Element threadElement, Forum forum, int pageId) {
+//		Optional<Integer> optThreadId = getThreadId(threadElement);
+//		if (optThreadId.isEmpty()) {
+//			return Stream.empty();
+//		}
+//		int threadId = optThreadId.get();
+//
+//		Optional<String> optThreadTitle = threadElement
+//			.getElementsByClass("info").stream().flatMap(info -> info.getElementsByTag("a").stream()).findFirst().map(el -> el.text());
+//		if (optThreadTitle.isEmpty()) {
+//			return Stream.empty();
+//		}
+//		String threadTitle = optThreadTitle.get();
+//
+//		// Thread page count
+//		Stream<Integer> pageNumbers = threadElement
+//			.getElementsByClass("pagenumber")
+//			.stream()
+//			.map(Element::text)
+//			.filter(s -> !s.startsWith("Last"))
+//			.flatMap(s -> {
+//				try {
+//					return Stream.of(Integer.parseInt(s));
+//				} catch (NumberFormatException nfe) {
+//				}
+//				return Stream.empty();
+//			});
+//
+//		OptionalInt optMaxPageNumber = pageNumbers.mapToInt(i -> i).max();
+//		if (optMaxPageNumber.isEmpty()) {
+//			return Stream.empty();
+//		}
+//		int maxPageNumber = optMaxPageNumber.getAsInt();
+//
+//		// Thread author
+//		Optional<Element> authorElement = threadElement.getElementsByClass("author").stream()
+//			.flatMap(a -> a.getElementsByTag("a").stream()).findFirst();
+//
+//		if (authorElement.isEmpty()) {
+//			return Stream.empty();
+//		}
+//
+//		String authorName = authorElement.get().text();
+//		String authorIdHref = authorElement.get().attr("href");
+//
+//		if (null == authorName || authorName.isEmpty()) {
+//			return Stream.empty();
+//		}
+//
+//		if (null == authorIdHref || authorIdHref.isEmpty()) {
+//			return Stream.empty();
+//		}
+//
+//		Optional<Integer> optAuthorId = userIdFromHref(authorIdHref);
+//		if (optAuthorId.isEmpty()) {
+//			return Stream.empty();
+//		}
+//
+//		Author author = new Author();
+//		author.setId(optAuthorId.get());
+//		author.setName(authorName);
+//
+//		Thread thread = new Thread();
+//		thread.setId(threadId);
+//		thread.setName(threadTitle);
+//		thread.setMaxPageNumber(maxPageNumber);
+//		thread.setForum(forum);
+//		thread.setAuthor(author);
+//
+//		return Stream.of(thread);
+//	}
 
 	private Stream<Post> parsePost(Element postElement, Thread thread, int pageId) {
 		final Optional<String> optAuthorName = postElement
@@ -463,14 +465,14 @@ public class ReactiveSAClient implements Client {
 		return parsePostIdString(postIdString);
 	}
 
-	private Optional<Integer> getThreadId(Element threadElement) {
-		String idAttr = threadElement.attr("id");
-		if (null == idAttr || idAttr.length() == 0) {
-			return Optional.empty();
-		} else if (idAttr.startsWith("thread")) {
-			String idText = idAttr.substring(6);
-			return Optional.of(Integer.parseInt(idText));
-		}
-		return Optional.empty();
-	}
+//	private Optional<Integer> getThreadId(Element threadElement) {
+//		String idAttr = threadElement.attr("id");
+//		if (null == idAttr || idAttr.length() == 0) {
+//			return Optional.empty();
+//		} else if (idAttr.startsWith("thread")) {
+//			String idText = idAttr.substring(6);
+//			return Optional.of(Integer.parseInt(idText));
+//		}
+//		return Optional.empty();
+//	}
 }

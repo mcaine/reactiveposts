@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.testdata;
 
+import com.mikeycaine.reactiveposts.model.Forum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
@@ -23,9 +24,9 @@ public class GetTestData implements Directories {
         Arrays.stream(threadPageSpecs).forEach(ThreadPageSpec::cacheThreadPage);
 
         IndexPageSpec[] indexPageSpecs = {
-        	IndexPageSpec.of(161,  4),  // Goons with Spoons
-	        IndexPageSpec.of(192, 5),   // Inspect your gadgets
-	        IndexPageSpec.of(273, 6)    // GBS
+        	IndexPageSpec.of(new Forum(161, "Goons with Spoons"),  4),
+	        IndexPageSpec.of(new Forum(192, "Inspect your gadgets"), 5),
+	        IndexPageSpec.of(new Forum(273, "GBS"),6)
         };
 
 		Arrays.stream(indexPageSpecs).forEach(IndexPageSpec::cacheIndexPage);

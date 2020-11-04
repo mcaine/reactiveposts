@@ -20,40 +20,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class ForumPageUtils {
 
-//	public static Flux<Forum> parseMainForumIndexPage(MainForumIndexContent forumIndexContent) {
-//		return Flux.fromStream(forumStreamFromPage(forumIndexContent.content()));
-//	}
-
-//	private static Stream<Forum> forumStreamFromPage(String bodyText) {
-//		//log.info("PARSING INDEX PAGE\n" + bodyText);
-//		Element body = Jsoup.parse(bodyText).body();
-//		Elements forumElements = body.getElementById("forums").getElementsByClass("forum");
-//
-//		return forumElements.stream().flatMap(element ->
-//			element.getElementsByClass("title").stream()).flatMap(titleElement -> {
-//
-//			Element forumElement = titleElement.getElementsByClass("forum").first();
-//			String forumName = forumElement.text();
-//			return forumIdFromHref(forumElement.attr("href")).stream()
-//				.map(fid -> new Forum(fid, forumName, subForums(titleElement)));
-//		});
-//	}
-//
-//	public static Set<Forum> subForums(Element titleElement) {
-//		return titleElement.getElementsByClass("subforums").stream().flatMap(subforumsElement ->
-//			subforumsElement.getElementsByTag("a").stream().flatMap(subforumLinkElement ->
-//				forumIdFromHref(subforumLinkElement.attr("href")).stream()
-//					.map(subForumId -> new Forum(subForumId, subforumLinkElement.text()))
-//			)
-//		).collect(Collectors.toSet());
-//	}
-
-//	public static Optional<Integer> forumIdFromHref(String href) {
-//		Pattern pattern = Pattern.compile("(.*)forumid=(\\d+)");
-//		Matcher matcher = pattern.matcher(href);
-//		return matcher.find() ? Optional.of(Integer.parseInt(matcher.group(2))) : Optional.empty();
-//	}
-
 	public static Mono<Integer> parseLatestPageId(String bodyText) {
 		return lastPageNumber(Jsoup.parse(bodyText).body())
 			.map(Mono::just)
