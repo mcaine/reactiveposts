@@ -22,7 +22,7 @@ public class Thread {
 
 	@Getter
 	@Setter
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne //(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
 	private Forum forum;
 
@@ -32,7 +32,7 @@ public class Thread {
 
 	@Getter
 	@Setter
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(nullable = false)
 	private Author author;
 }

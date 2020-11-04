@@ -38,9 +38,15 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 		Forum cspam = forumRepository.findById(269).get();
 
 		List<Thread> cspamThreads = client.retrieveThreads(cspam, 1, 3).collectList().block();
-		cspamThreads.forEach(thread-> {
-			authorRepository.save(thread.getAuthor());
+		cspamThreads.forEach(thread -> {
+			//authorRepository.save(thread.getAuthor());
 			threadRepository.save(thread);
+		});
+
+		Thread someThread = cspamThreads.get(0);
+		List<Post> posts = client.retrievePosts(someThread, 1, 2).collectList().block();
+		posts.forEach(post ->  {
+			postRepository.save(post);
 		});
 	}
 }

@@ -6,15 +6,15 @@ public class Urls {
     private static final String FORUM_ADDRESS = "/forumdisplay.php?forumid=%d&perpage=40&sortorder=desc&sortfield=lastpost&pagenumber=%d";
     public static final String INDEX_PHP = "/index.php";
 
-    public static String pageAddress(int threadId, int pageNumber) {
+    public static String postsPageAddress(int threadId, int pageNumber) {
         return String.format(PAGE_ADDRESS, threadId, pageNumber);
     }
 
-    public static String forumIndexAddress(int forumId, int pageNumber) {
+    public static String forumThreadsIndexAddress(int forumId, int pageNumber) {
         return String.format(FORUM_ADDRESS, forumId, pageNumber);
     }
 
-    public static String forumIndex() {
+    public static String mainforumIndex() {
         return INDEX_PHP;
     }
 }
