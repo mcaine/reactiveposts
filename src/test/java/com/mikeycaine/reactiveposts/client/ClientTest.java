@@ -1,8 +1,11 @@
 package com.mikeycaine.reactiveposts.client;
 
 import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
+import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.testdata.IndexPageSpec;
+import com.mikeycaine.reactiveposts.testdata.ThreadPageSpec;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -64,6 +67,19 @@ public class ClientTest extends ClientTestUtils {
 			IndexPageSpec.of(iyg, 6).cachedContentMono().flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux)
 		)
 			.expectNextMatches(thread -> thread.getName().equals("Other times I don't make a thread"))
+			.expectNextCount(39L)
+			.verifyComplete();
+	}
+
+	//
+
+	@Test
+	public void testParsePostsPage() {
+		Thread trumo = Thread.withId(3942499);
+		StepVerifier.create(
+			ThreadPageSpec.of(trumo, 1).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
+		)
+			.expectNextMatches(post -> post.getAuthor().getName().equals("Korean Boomhauer") && post.getId() == 508526226)
 			.expectNextCount(39L)
 			.verifyComplete();
 	}

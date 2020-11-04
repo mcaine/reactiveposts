@@ -67,7 +67,8 @@ public class ReactiveSAClient implements Client {
 		log.info("Retrieving posts for " + thread.getId() + ", Page=" + pageId + ")");
 		validatePageIdParam(pageId);
 		return postsPageContent(thread, pageId)
-			.flatMapMany(content -> parseToPostsFlux(content, thread.getId(), pageId));
+		.flatMapMany(content -> parseToPostsFlux(content, thread.getId(), pageId));
+		//.flatMapMany(PostsPageContent::parseToPostsFlux);
 	}
 
 	@Override
@@ -104,9 +105,9 @@ public class ReactiveSAClient implements Client {
 			.map(body -> new ForumThreadsIndexContent(body, forum, pageNum));
 	}
 
-	private Mono<PostsPageContent> postsPageContent(Thread thread, int pageId) {
-	    return retrieveBodyAsMono(Urls.postsPageAddress(thread.getId(), pageId))
-            .map(PostsPageContent::new);
+	private Mono<PostsPageContent> postsPageContent(Thread thread, int pageNum) {
+	    return retrieveBodyAsMono(Urls.postsPageAddress(thread.getId(), pageNum))
+            .map(body -> new PostsPageContent(body, thread, pageNum));
     }
 
 
@@ -277,13 +278,13 @@ public class ReactiveSAClient implements Client {
 //        }
 //    }
 //
-	private Optional<Integer> parsePostIdString(Optional<String> optPostIdStr) {
-		try {
-			return optPostIdStr.map(Integer::valueOf);
-		} catch (NumberFormatException ex) {
-			return Optional.empty();
-		}
-	}
+//	private Optional<Integer> parsePostIdString(Optional<String> optPostIdStr) {
+//		try {
+//			return optPostIdStr.map(Integer::valueOf);
+//		} catch (NumberFormatException ex) {
+//			return Optional.empty();
+//		}
+//	}
 
 	//
 //	private Stream<Thread> parseThread(Element threadElement, Forum forum, int pageId) {
@@ -358,112 +359,112 @@ public class ReactiveSAClient implements Client {
 //		return Stream.of(thread);
 //	}
 
-	private Stream<Post> parsePost(Element postElement, Thread thread, int pageId) {
-		final Optional<String> optAuthorName = postElement
-			.getElementsByClass("author")
-			.stream()
-			.map(Element::ownText)
-			.findFirst();
-		if (optAuthorName.isEmpty()) {
-			return Stream.empty();
-		}
-		String authorName = optAuthorName.get();
+//	private Stream<Post> parsePost(Element postElement, Thread thread, int pageId) {
+//		final Optional<String> optAuthorName = postElement
+//			.getElementsByClass("author")
+//			.stream()
+//			.map(Element::ownText)
+//			.findFirst();
+//		if (optAuthorName.isEmpty()) {
+//			return Stream.empty();
+//		}
+//		String authorName = optAuthorName.get();
+//
+//		final Optional<String> rawPostBodyHtml = postElement
+//			.getElementsByClass("postbody")
+//			.stream()
+//			.map(Element::html)
+//			.findFirst();
+//
+//		final Optional<String> optPostBodyHtml = cleanBodyHtml(rawPostBodyHtml);
+//		if (optPostBodyHtml.isEmpty()) {
+//			return Stream.empty();
+//		}
+//		final String postBodyHtml = optPostBodyHtml.get();
+//
+//		Optional<Integer> optPostId = getPostId(postElement);
+//		if (optPostId.isEmpty()) {
+//			return Stream.empty();
+//		}
+//		int postId = optPostId.get();
+//
+//		Optional<String> postDateString = postElement
+//			.getElementsByClass("postdate")
+//			.stream().map(Element::ownText)
+//			.findFirst();
+//
+//		// eg Feb 1, 2020 05:24
+//		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm");
+//		Optional<LocalDateTime> postDate = Optional.empty();
+//		try {
+//			postDate = postDateString.map(pds -> LocalDateTime.parse(pds, DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm")));
+//		} catch (DateTimeParseException ex) {
+//			log.warn("Can't parse post date");
+//		}
+//		if (postDate.isEmpty()) {
+//			return Stream.empty();
+//		}
+//
+//		Optional<String> optAuthorId = postElement
+//			.getElementsByTag("td")
+//			.stream()
+//			.filter(el -> el.hasClass("userinfo"))
+//			.flatMap(el -> el.classNames().stream())
+//			.filter(s -> s.startsWith("userid-"))
+//			.map(s -> s.substring(7))
+//			.findFirst();
+//		if (optAuthorId.isEmpty()) {
+//			return Stream.empty();
+//		}
+//
+//		Optional<Integer> optAuthorIdInt;
+//		try {
+//			optAuthorIdInt = Optional.of(Integer.parseInt(optAuthorId.get()));
+//		} catch (NumberFormatException nfe) {
+//			return Stream.empty();
+//		}
+//		int authorId = optAuthorIdInt.get();
+//
+//		Author author = new Author();
+//		author.setId(authorId);
+//		author.setName(authorName);
+//
+//		return Stream.empty(); /// TODO
+////            Stream.of(new Post(
+////                postId,
+////                pageId,
+////                postDate.get(),
+////                Instant.now(),
+////                author,
+////                Integer.valueOf(optAuthorId.get()),
+////                optPostBodyHtml.get(),
+////                thread));
+//	}
 
-		final Optional<String> rawPostBodyHtml = postElement
-			.getElementsByClass("postbody")
-			.stream()
-			.map(Element::html)
-			.findFirst();
+//	private Optional<String> cleanBodyHtml(Optional<String> rawPostBodyHtml) {
+//		return rawPostBodyHtml.map(html ->
+//			html.replace("<!-- google_ad_section_start -->", "")
+//				.replace("<!-- google_ad_section_end -->", "")
+//				.replace("<p class=\"editedby\"> </p>", "")
+//				.trim());
+//	}
 
-		final Optional<String> optPostBodyHtml = cleanBodyHtml(rawPostBodyHtml);
-		if (optPostBodyHtml.isEmpty()) {
-			return Stream.empty();
-		}
-		final String postBodyHtml = optPostBodyHtml.get();
-
-		Optional<Integer> optPostId = getPostId(postElement);
-		if (optPostId.isEmpty()) {
-			return Stream.empty();
-		}
-		int postId = optPostId.get();
-
-		Optional<String> postDateString = postElement
-			.getElementsByClass("postdate")
-			.stream().map(Element::ownText)
-			.findFirst();
-
-		// eg Feb 1, 2020 05:24
-		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm");
-		Optional<LocalDateTime> postDate = Optional.empty();
-		try {
-			postDate = postDateString.map(pds -> LocalDateTime.parse(pds, DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm")));
-		} catch (DateTimeParseException ex) {
-			log.warn("Can't parse post date");
-		}
-		if (postDate.isEmpty()) {
-			return Stream.empty();
-		}
-
-		Optional<String> optAuthorId = postElement
-			.getElementsByTag("td")
-			.stream()
-			.filter(el -> el.hasClass("userinfo"))
-			.flatMap(el -> el.classNames().stream())
-			.filter(s -> s.startsWith("userid-"))
-			.map(s -> s.substring(7))
-			.findFirst();
-		if (optAuthorId.isEmpty()) {
-			return Stream.empty();
-		}
-
-		Optional<Integer> optAuthorIdInt;
-		try {
-			optAuthorIdInt = Optional.of(Integer.parseInt(optAuthorId.get()));
-		} catch (NumberFormatException nfe) {
-			return Stream.empty();
-		}
-		int authorId = optAuthorIdInt.get();
-
-		Author author = new Author();
-		author.setId(authorId);
-		author.setName(authorName);
-
-		return Stream.empty(); /// TODO
-//            Stream.of(new Post(
-//                postId,
-//                pageId,
-//                postDate.get(),
-//                Instant.now(),
-//                author,
-//                Integer.valueOf(optAuthorId.get()),
-//                optPostBodyHtml.get(),
-//                thread));
-	}
-
-	private Optional<String> cleanBodyHtml(Optional<String> rawPostBodyHtml) {
-		return rawPostBodyHtml.map(html ->
-			html.replace("<!-- google_ad_section_start -->", "")
-				.replace("<!-- google_ad_section_end -->", "")
-				.replace("<p class=\"editedby\"> </p>", "")
-				.trim());
-	}
-
-	private Optional<Integer> getPostId(Element postElement) {
-		// Post IDs look like '#post508526226'
-		final String postIDPrefix = "#post";
-		final int postIDPrefixLength = postIDPrefix.length();
-
-		final Optional<String> postIdString = postElement
-			.getElementsByClass("postdate")
-			.stream()
-			.flatMap(el -> el.getElementsByTag("a").stream())
-			.map(el -> el.attr("href"))
-			.filter(s -> s.startsWith(postIDPrefix))
-			.map(s -> s.substring(postIDPrefixLength))
-			.findFirst();
-
-		return parsePostIdString(postIdString);
-	}
+//	private Optional<Integer> getPostId(Element postElement) {
+//		// Post IDs look like '#post508526226'
+//		final String postIDPrefix = "#post";
+//		final int postIDPrefixLength = postIDPrefix.length();
+//
+//		final Optional<String> postIdString = postElement
+//			.getElementsByClass("postdate")
+//			.stream()
+//			.flatMap(el -> el.getElementsByTag("a").stream())
+//			.map(el -> el.attr("href"))
+//			.filter(s -> s.startsWith(postIDPrefix))
+//			.map(s -> s.substring(postIDPrefixLength))
+//			.findFirst();
+//
+//		return parsePostIdString(postIdString);
+//	}
 
 //	private Optional<Integer> getThreadId(Element threadElement) {
 //		String idAttr = threadElement.attr("id");

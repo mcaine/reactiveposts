@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.testdata;
 
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
@@ -17,8 +18,8 @@ public class GetTestData implements Directories {
 		Directories.checkDirsExist();
 
 		ThreadPageSpec[] threadPageSpecs = {
-			ThreadPageSpec.of(3942499, 1),
-			ThreadPageSpec.of(3913301, 10) // what if a Big Mac
+			ThreadPageSpec.of(Thread.withId(3942499), 1),
+			ThreadPageSpec.of(Thread.withId(3913301), 10) // what if a Big Mac
 		};
 
         Arrays.stream(threadPageSpecs).forEach(ThreadPageSpec::cacheThreadPage);

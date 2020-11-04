@@ -9,6 +9,7 @@ import javax.persistence.*;
 @Entity
 @ToString(onlyExplicitlyIncluded = true)
 public class Thread {
+
 	@Id
 	@Getter
 	@Setter
@@ -35,4 +36,10 @@ public class Thread {
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(nullable = false)
 	private Author author;
+
+	public static Thread withId(int id) {
+		Thread t = new Thread();
+		t.setId(id);
+		return t;
+	}
 }
