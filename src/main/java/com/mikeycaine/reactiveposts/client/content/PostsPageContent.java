@@ -5,14 +5,20 @@ import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -40,7 +46,9 @@ public class PostsPageContent extends AbstractContent {
 		if (null == content || content.isEmpty() || content.isBlank()) {
 			return Optional.empty();
 		}
+
 		Element bodyElement = Jsoup.parse(content).body();
+		Optional<Integer> optLastPageNumber = lastPageNumber(bodyElement);
 
 		Element threadElement = bodyElement.getElementById("thread");
 		if (threadElement != null) {
@@ -92,15 +100,16 @@ public class PostsPageContent extends AbstractContent {
 
 		// eg Feb 1, 2020 05:24
 		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm");
-		Optional<LocalDateTime> postDate = Optional.empty();
+		Optional<LocalDateTime> optPostDate = Optional.empty();
 		try {
-			postDate = postDateString.map(pds -> LocalDateTime.parse(pds, DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm")));
+			optPostDate = postDateString.map(pds -> LocalDateTime.parse(pds, DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm")));
 		} catch (DateTimeParseException ex) {
 			log.warn("Can't parse post date");
 		}
-		if (postDate.isEmpty()) {
+		if (optPostDate.isEmpty()) {
 			return Stream.empty();
 		}
+		LocalDateTime postDate = optPostDate.get();
 
 		Optional<String> optAuthorId = postElement
 			.getElementsByTag("td")
@@ -129,6 +138,10 @@ public class PostsPageContent extends AbstractContent {
 		Post post = new Post();
 		post.setId(postId);
 		post.setAuthor(author);
+		post.setThread(thread);
+		post.setPostDate(postDate);
+		post.setRetrievedDate(Instant.now());
+		post.setHtml(postBodyHtml);
 		return Stream.of(post);
 //            Stream.of(new Post(
 //                postId,
@@ -185,5 +198,33 @@ public class PostsPageContent extends AbstractContent {
 		} catch (NumberFormatException ex) {
 			return Optional.empty();
 		}
+	}
+
+	/////////////
+
+	public Mono<Integer> parseLatestPageId() {
+		return lastPageNumber(Jsoup.parse(content).body())
+			.map(Mono::just)
+			.orElse(Mono.empty());
+	}
+
+	public Optional<Integer> lastPageNumber(@NotNull Element body) {
+		Optional<String> optLinkToLastPage = body
+			.getElementsByClass("pages")
+			.stream()
+			.flatMap(links ->
+				links.getElementsByAttributeValue("title", "Last page")
+					.stream()
+					.map(el -> el.attr("href")))
+			.findFirst();
+
+		log.debug("Link to last page: " + optLinkToLastPage);
+
+		return optLinkToLastPage.flatMap(link -> {
+			Matcher matcher = Pattern.compile("(.*)pagenumber=(\\d+)").matcher(link);
+			return matcher.find() ?
+				Optional.of(Integer.valueOf(matcher.group(2))) :
+				Optional.empty();
+		});
 	}
 }

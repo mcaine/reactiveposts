@@ -16,18 +16,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import com.mikeycaine.reactiveposts.model.Thread;
 
-import static com.mikeycaine.reactiveposts.client.ThreadPageUtils.parseToPostsFlux;
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageIdParam;
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageRangeParams;
 
@@ -45,11 +36,9 @@ public class ReactiveSAClient implements Client {
 			.flatMapMany(MainForumIndexContent::parseMainForumIndexPage);
 	}
 
-	// HERE
 	@Override
 	public Flux<Thread> retrieveThreads(Forum forum, int pageId) {
 		return forumThreadsIndexContent(forum, pageId)
-			//.flatMapMany(content -> parseToThreadsFlux(content, forum, pageId));
 			.flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux);
 	}
 
@@ -67,8 +56,7 @@ public class ReactiveSAClient implements Client {
 		log.info("Retrieving posts for " + thread.getId() + ", Page=" + pageId + ")");
 		validatePageIdParam(pageId);
 		return postsPageContent(thread, pageId)
-		.flatMapMany(content -> parseToPostsFlux(content, thread.getId(), pageId));
-		//.flatMapMany(PostsPageContent::parseToPostsFlux);
+		.flatMapMany(PostsPageContent::parseToPostsFlux);
 	}
 
 	@Override
@@ -81,8 +69,8 @@ public class ReactiveSAClient implements Client {
 
 	@Override
 	public Mono<Integer> latestPageId(Thread thread) {
-		return retrieveBodyAsMono(Urls.postsPageAddress(thread.getId(), 1))
-			.flatMap(ForumPageUtils::parseLatestPageId);
+		return postsPageContent(thread, 1)
+			.flatMap(PostsPageContent::parseLatestPageId);
 	}
 
 	////////////////////////////////////////////////////////////////////

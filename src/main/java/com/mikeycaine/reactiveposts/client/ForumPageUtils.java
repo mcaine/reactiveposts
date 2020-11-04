@@ -20,29 +20,29 @@ import java.util.stream.Stream;
 @Slf4j
 public class ForumPageUtils {
 
-	public static Mono<Integer> parseLatestPageId(String bodyText) {
-		return lastPageNumber(Jsoup.parse(bodyText).body())
-			.map(Mono::just)
-			.orElse(Mono.empty());
-	}
-
-	public static Optional<Integer> lastPageNumber(@NotNull Element body) {
-		Optional<String> optLinkToLastPage = body
-			.getElementsByClass("pages")
-			.stream()
-			.flatMap(links ->
-				links.getElementsByAttributeValue("title", "Last page")
-					.stream()
-					.map(el -> el.attr("href")))
-			.findFirst();
-
-		log.debug("Link to last page: " + optLinkToLastPage);
-
-		return optLinkToLastPage.flatMap(link -> {
-			Matcher matcher = Pattern.compile("(.*)pagenumber=(\\d+)").matcher(link);
-			return matcher.find() ?
-				Optional.of(Integer.valueOf(matcher.group(2))) :
-				Optional.empty();
-		});
-	}
+//	public static Mono<Integer> parseLatestPageId(String bodyText) {
+//		return lastPageNumber(Jsoup.parse(bodyText).body())
+//			.map(Mono::just)
+//			.orElse(Mono.empty());
+//	}
+//
+//	public static Optional<Integer> lastPageNumber(@NotNull Element body) {
+//		Optional<String> optLinkToLastPage = body
+//			.getElementsByClass("pages")
+//			.stream()
+//			.flatMap(links ->
+//				links.getElementsByAttributeValue("title", "Last page")
+//					.stream()
+//					.map(el -> el.attr("href")))
+//			.findFirst();
+//
+//		log.debug("Link to last page: " + optLinkToLastPage);
+//
+//		return optLinkToLastPage.flatMap(link -> {
+//			Matcher matcher = Pattern.compile("(.*)pagenumber=(\\d+)").matcher(link);
+//			return matcher.find() ?
+//				Optional.of(Integer.valueOf(matcher.group(2))) :
+//				Optional.empty();
+//		});
+//	}
 }
