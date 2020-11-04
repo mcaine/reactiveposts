@@ -11,8 +11,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 //@Profile("initialise")
 @Slf4j
@@ -22,7 +24,6 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 	private final ForumRepository forumRepository;
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
-	private final AuthorRepository authorRepository;
 	private final Client client;
 
 	@Override
@@ -39,14 +40,12 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 
 		List<Thread> cspamThreads = client.retrieveThreads(cspam, 1, 3).collectList().block();
 		cspamThreads.forEach(thread -> {
-			authorRepository.save(thread.getAuthor());
 			threadRepository.save(thread);
 		});
 
 		Thread someThread = cspamThreads.get(0);
 		List<Post> posts = client.retrievePosts(someThread, 1, 2).collectList().block();
 		posts.forEach(post ->  {
-			authorRepository.save(post.getAuthor());
 			postRepository.save(post);
 		});
 	}

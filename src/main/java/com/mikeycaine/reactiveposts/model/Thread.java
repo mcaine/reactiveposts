@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -8,6 +9,7 @@ import javax.persistence.*;
 
 @Entity
 @ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class Thread {
 
 	@Id
@@ -33,9 +35,9 @@ public class Thread {
 
 	@Getter
 	@Setter
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(nullable = false)
-	private Author author;
+//	@ManyToOne(cascade = CascadeType.ALL)
+//	@JoinColumn(nullable = false)
+	private int authorId;
 
 	public static Thread withId(int id) {
 		Thread t = new Thread();

@@ -3,9 +3,8 @@ package com.mikeycaine.reactiveposts.client;
 import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.MainForumIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
-import com.mikeycaine.reactiveposts.model.Author;
-import com.mikeycaine.reactiveposts.model.Forum;
-import com.mikeycaine.reactiveposts.model.Post;
+import com.mikeycaine.reactiveposts.model.*;
+import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -17,7 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-import com.mikeycaine.reactiveposts.model.Thread;
+import java.util.Optional;
 
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageIdParam;
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageRangeParams;
@@ -56,7 +55,7 @@ public class ReactiveSAClient implements Client {
 		log.info("Retrieving posts for " + thread.getId() + ", Page=" + pageId + ")");
 		validatePageIdParam(pageId);
 		return postsPageContent(thread, pageId)
-		.flatMapMany(PostsPageContent::parseToPostsFlux);
+			.flatMapMany(PostsPageContent::parseToPostsFlux);
 	}
 
 	@Override

@@ -112,18 +112,19 @@ public class ForumThreadsIndexContent extends AbstractContent {
 			return Stream.empty();
 		}
 
-		Author author = new Author();
-		author.setId(optAuthorId.get());
-		author.setName(authorName);
+//		Author author = new Author();
+//		author.setId(optAuthorId.get());
+//		author.setName(authorName);
+		int authorId = optAuthorId.get();
 
 		Thread thread = new Thread();
 		thread.setId(threadId);
 		thread.setName(threadTitle);
 		thread.setMaxPageNumber(maxPageNumber);
 		thread.setForum(forum);
-		thread.setAuthor(author);
+		thread.setAuthorId(authorId);
 
-		author.getThreads().add(thread);
+		//author.getThreads().add(thread);
 
 		return Stream.of(thread);
 	}

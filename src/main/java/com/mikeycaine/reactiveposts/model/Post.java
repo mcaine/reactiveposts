@@ -2,6 +2,7 @@ package com.mikeycaine.reactiveposts.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -35,11 +36,22 @@ public class Post {
 	@Getter
 	@Setter
 	//@Column
+	@EqualsAndHashCode.Include
 	private Integer id;
+
+	@Getter @Setter
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(nullable = false)
+	private Thread thread;
 
 	@Getter @Setter
 	@Column
 	private Integer pageNum;
+
+	@Getter @Setter
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(nullable = false)
+	private Author author;
 
 	@Getter @Setter
 	@Column
@@ -62,17 +74,4 @@ public class Post {
 	@Getter @Setter
 	@Column(columnDefinition = "TEXT")
 	private String html;
-
-	@Getter @Setter
-	@ManyToOne //(fetch = FetchType.LAZY)
-	@JoinColumn(nullable = false)
-	private Thread thread;
-
-	@Getter @Setter
-	@ManyToOne
-	@JoinColumn(nullable = false)
-	private Author author;
-
-
-
 }

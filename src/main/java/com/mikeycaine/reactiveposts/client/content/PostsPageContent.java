@@ -142,6 +142,7 @@ public class PostsPageContent extends AbstractContent {
 		post.setPostDate(postDate);
 		post.setRetrievedDate(Instant.now());
 		post.setHtml(postBodyHtml);
+		post.setPageNum(pageNum);
 
 		author.getPosts().add(post);
 		return Stream.of(post);
