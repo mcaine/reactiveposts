@@ -71,8 +71,6 @@ public class ClientTest extends ClientTestUtils {
 			.verifyComplete();
 	}
 
-	//
-
 	@Test
 	public void testParsePostsPage() {
 		Thread trumo = Thread.withId(3942499);
@@ -80,6 +78,17 @@ public class ClientTest extends ClientTestUtils {
 			ThreadPageSpec.of(trumo, 1).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
 		)
 			.expectNextMatches(post -> post.getAuthor().getName().equals("Korean Boomhauer") && post.getId() == 508526226)
+			.expectNextCount(39L)
+			.verifyComplete();
+	}
+
+	@Test
+	public void testParsePostsPage2() {
+		Thread thread = Thread.withId(3913301);
+		StepVerifier.create(
+			ThreadPageSpec.of(thread, 10).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
+		)
+			.expectNextMatches(post -> post.getAuthor().getName().equals("oh but seriously I") && post.getId() == 507178153)
 			.expectNextCount(39L)
 			.verifyComplete();
 	}
