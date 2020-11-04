@@ -15,13 +15,11 @@ import java.util.stream.Stream;
 
 public class ForumThreadsIndexContent extends AbstractContent {
 
-//	private final int forumId;
 	private final Forum forum;
 	private final int pageNum;
 
 	public ForumThreadsIndexContent(String content, Forum forum, int pageNum) {
 		super(content);
-		//this.forumId = forumId;
 		this.forum = forum;
 		this.pageNum = pageNum;
 	}
@@ -43,7 +41,6 @@ public class ForumThreadsIndexContent extends AbstractContent {
 
 
 	private Optional<Element> forumElementFromResponseBody(String body) {
-
 		if (null == body || body.isEmpty() || body.isBlank()) {
 			return Optional.empty();
 		}
@@ -111,10 +108,6 @@ public class ForumThreadsIndexContent extends AbstractContent {
 		if (optAuthorId.isEmpty()) {
 			return Stream.empty();
 		}
-
-//		Author author = new Author();
-//		author.setId(optAuthorId.get());
-//		author.setName(authorName);
 		int authorId = optAuthorId.get();
 
 		Thread thread = new Thread();
@@ -123,8 +116,6 @@ public class ForumThreadsIndexContent extends AbstractContent {
 		thread.setMaxPageNumber(maxPageNumber);
 		thread.setForum(forum);
 		thread.setAuthorId(authorId);
-
-		//author.getThreads().add(thread);
 
 		return Stream.of(thread);
 	}
