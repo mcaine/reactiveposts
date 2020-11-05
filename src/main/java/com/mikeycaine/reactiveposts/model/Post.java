@@ -72,6 +72,6 @@ public class Post {
 //	private Integer authorId;
 
 	@Getter @Setter
-	@Column(columnDefinition = "MEDIUMTEXT")
+	@Column(columnDefinition = "TEXT")
 	private String html;
 }
