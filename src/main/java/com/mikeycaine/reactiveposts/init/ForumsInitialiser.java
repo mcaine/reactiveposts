@@ -6,44 +6,46 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
+import java.util.Optional;
 
-//@Profile("initialise")
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEvent> {
 
-	final ForumsService forumsService;
+	private final ForumsService forumsService;
+
+	private Optional<Disposable> threadUpdates = Optional.empty();
+	private Optional<Disposable> postUpdates = Optional.empty();
+
+	private Duration threadUpdateInterval = Duration.ofMinutes(5);
+	private Duration postUpdateInterval = Duration.ofSeconds(60);
 
 	@Override
 	public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
 		forumsService.updateForums();
+		start();
+	}
 
-		Flux.interval(Duration.ofSeconds(10)).flatMap( l -> {
+	public void start() {
+		threadUpdates.ifPresent(Disposable::dispose);
+		postUpdates.ifPresent(Disposable::dispose);
+
+		threadUpdates = Optional.of(Flux.interval(threadUpdateInterval).flatMap(l -> {
 			log.info("Update threads [{}]", l);
 			return forumsService.updateThreads();
-		}).subscribe(System.out::println);
+		}).subscribe());
 
-		Flux.interval(Duration.ofSeconds(10)).flatMap(l -> {
+		postUpdates = Optional.of(Flux.interval(postUpdateInterval).flatMap(l -> {
 			log.info("Update posts [{}]", l);
 			return forumsService.updatePosts();
-		}).subscribe(System.out::println);
-
-
-//		Forum cspam = forumRepository.findById(269).get();
-//
-//		List<Thread> cspamThreads = client.retrieveThreads(cspam, 1, 13).collectList().block();
-//		cspamThreads.forEach(threadRepository::save);
-//
-//		Thread someThread = cspamThreads.get(0);
-//		List<Post> posts = client.retrievePosts(someThread, 1, 3).collectList().block();
-//		posts.forEach(postRepository::save);
+		}).subscribe());
 	}
 }
 
