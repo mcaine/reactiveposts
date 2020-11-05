@@ -9,8 +9,11 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
-@Profile("initialise")
+import java.time.Duration;
+
+//@Profile("initialise")
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,15 +25,15 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 	public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
 		forumsService.updateForums();
 
-//		Flux.interval(Duration.ofSeconds(10)).subscribe(i -> {
-//			log.info("[{}] ", i);
-//			forumsService.updateThreads();
-//		});
-//
-//		Flux.interval(Duration.ofSeconds(10)).subscribe(i -> {
-//			log.info("({}) ", i);
-//			forumsService.updatePosts();
-//		});
+		Flux.interval(Duration.ofSeconds(10)).flatMap( l -> {
+			log.info("Update threads [{}]", l);
+			return forumsService.updateThreads();
+		}).subscribe(System.out::println);
+
+		Flux.interval(Duration.ofSeconds(10)).flatMap(l -> {
+			log.info("Update posts [{}]", l);
+			return forumsService.updatePosts();
+		}).subscribe(System.out::println);
 
 
 //		Forum cspam = forumRepository.findById(269).get();

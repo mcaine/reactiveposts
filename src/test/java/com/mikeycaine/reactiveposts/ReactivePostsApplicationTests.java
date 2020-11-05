@@ -1,7 +1,5 @@
 package com.mikeycaine.reactiveposts;
 
-import com.mikeycaine.reactiveposts.client.Client;
-import com.mikeycaine.reactiveposts.client.ClientTestUtils;
 import com.mikeycaine.reactiveposts.model.*;
 import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.repos.AuthorRepository;
@@ -13,18 +11,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @Slf4j
-class ReactivePostsApplicationTests extends ClientTestUtils  {
+class ReactivePostsApplicationTests  {
 
 	final int CSPAM_FORUM_ID = 269;
 
@@ -41,9 +37,6 @@ class ReactivePostsApplicationTests extends ClientTestUtils  {
 	AuthorRepository authorRepository;
 
 	@Autowired
-	Client client;
-
-	@Autowired
 	ForumsService forumsService;
 
 	@Test
@@ -52,55 +45,35 @@ class ReactivePostsApplicationTests extends ClientTestUtils  {
 
 	@Test
 	void testIt() throws Exception {
-		CompletableFuture<Void> x = forumsService.updateForums().thenApplyAsync(v -> {
-				Optional<Forum> optCspam = forumRepository.findById(CSPAM_FORUM_ID);
-				assertTrue(optCspam.isPresent(), "C-SPAM is missing WTF");
-				return optCspam.get();
-			}).thenAccept(cspam -> {
-				forumsService.subscribeToForum(cspam);
-			}).thenRun(() -> {
-				forumsService.updateThreads();
+		StepVerifier.create(forumsService.updateForums())
+			.expectNextCount(29)
+			.verifyComplete();
 
-				List<Thread> threads = threadRepository.findAll();
-				assertTrue(threads.size() > 0);
+		Optional<Forum> optCspam = forumRepository.findById(CSPAM_FORUM_ID);
+		assertTrue(optCspam.isPresent(), "C-SPAM is missing WTF");
 
-				final Thread thread = threads.get(0);
-				log.info("found a thread " + thread);
+		Forum cspam = optCspam.get();
+		forumsService.subscribeToForum(cspam);
 
-				forumsService.subscribeToThread(thread);
-				forumsService.updatePosts();
+		StepVerifier.create(forumsService.updateThreads())
+			.expectNextCount(40)
+			.verifyComplete();
 
-				assertTrue(postRepository.count() > 0);
-			});
+		List<Thread> threads = threadRepository.findAll();
+		assertTrue(threads.size() == 40);
 
-		x.get(20, TimeUnit.SECONDS);
+		final Thread thread = threads.get(0);
+		log.info("found a thread " + thread);
+
+		forumsService.subscribeToThread(thread);
+
+		StepVerifier.create(forumsService.updatePosts())
+			.consumeNextWith(post -> log.info("Heres a post: " + post))
+			.expectNextCount(39)
+			.verifyComplete();
+
+		assertTrue(40 == postRepository.count());
+
+		assertTrue(authorRepository.count() > 0);
 	}
-
-//	@Test
-//	void testCspamExists() {
-//		Optional<Forum> cspam = forumRepository.findById(CSPAM_FORUM_ID);
-//		assertTrue(cspam.isPresent(), "C-SPAM is missing WTF");
-//	}
-
-//	@Test
-//	void test2() {
-//		final int THREAD_ID = 3942499;
-//		final int PAGES_TO_GET = 2;
-//
-//		Optional<Forum> cspam = forumRepository.findById(CSPAM_FORUM_ID);
-//		if (cspam.isPresent()) {
-//			List<Thread> threadList = client.retrieveThreads(cspam.get(), 1).collectList().block();
-//			Thread thread = threadList.get(0);
-//			int latestPage = thread.getMaxPageNumber();
-//			log.info("Latest page for " + thread + " is " + latestPage);
-//			int pageToStart = Math.max(1, latestPage - PAGES_TO_GET + 1);
-//
-//			Flux<Post> postFlux = client.retrievePosts(thread, pageToStart, latestPage);
-//			logPostsFlux(postFlux);
-//
-//
-//		} else {
-//			fail();
-//		}
-//	}
 }
