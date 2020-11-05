@@ -4,8 +4,11 @@ import com.mikeycaine.reactiveposts.client.Client;
 import com.mikeycaine.reactiveposts.client.ClientTestUtils;
 import com.mikeycaine.reactiveposts.model.*;
 import com.mikeycaine.reactiveposts.model.Thread;
+import com.mikeycaine.reactiveposts.repos.AuthorRepository;
+import com.mikeycaine.reactiveposts.repos.ForumRepository;
+import com.mikeycaine.reactiveposts.repos.PostRepository;
+import com.mikeycaine.reactiveposts.repos.ThreadRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +16,6 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;

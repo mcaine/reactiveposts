@@ -3,18 +3,17 @@ package com.mikeycaine.reactiveposts.init;
 import com.mikeycaine.reactiveposts.client.Client;
 import com.mikeycaine.reactiveposts.model.*;
 import com.mikeycaine.reactiveposts.model.Thread;
+import com.mikeycaine.reactiveposts.repos.ForumRepository;
+import com.mikeycaine.reactiveposts.repos.PostRepository;
+import com.mikeycaine.reactiveposts.repos.ThreadRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Profile;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 //@Profile("initialise")
 @Slf4j
