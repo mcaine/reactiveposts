@@ -82,8 +82,8 @@ public class ForumThreadsIndexContent extends AbstractContent {
 				try {
 					return Stream.of(Integer.parseInt(s));
 				} catch (NumberFormatException nfe) {
+					return Stream.empty();
 				}
-				return Stream.empty();
 			});
 
 		Optional<Integer>optMaxPageNumber = pageNumbers.max(Integer::compareTo);
