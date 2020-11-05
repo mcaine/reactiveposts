@@ -12,7 +12,7 @@ public class GetTestData implements Directories {
 	final static int CONNECT_TIMEOUT = 5000;
 	final static int READ_TIMEOUT = 5000;
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		log.info("Looking for files...");
 
 		Directories.checkDirsExist();

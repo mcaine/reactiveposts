@@ -5,7 +5,6 @@ import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -19,6 +18,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -74,6 +74,20 @@ public class PostsPageContent extends AbstractContent {
 			return Stream.empty();
 		}
 		String authorName = optAuthorName.get();
+
+		final Stream<String> titlePix = postElement
+			.getElementsByClass("title")
+			.stream()
+			.flatMap(title -> title.getElementsByTag("img").stream().map(element -> element.attr("src")));
+
+		final String titlePic = titlePix.findFirst().orElseGet(() -> "");
+
+		final Stream<String> titleTexts = postElement
+			.getElementsByClass("title")
+			.stream()
+			.map(title -> title.text());
+
+		final String titleText = titleTexts.collect(Collectors.joining("\n"));
 
 		final Optional<String> rawPostBodyHtml = postElement
 			.getElementsByClass("postbody")
@@ -134,6 +148,8 @@ public class PostsPageContent extends AbstractContent {
 		Author author = new Author();
 		author.setId(authorId);
 		author.setName(authorName);
+		author.setTitleURL(titlePic);
+		author.setTitleText(titleText);
 
 		Post post = new Post();
 		post.setId(postId);

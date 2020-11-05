@@ -26,7 +26,7 @@ public class ClientTest extends ClientTestUtils {
 	}
 
 	@Test
-	public void testPrintForums() throws InterruptedException {
+	public void testPrintForums() {
 		logForumsFlux(client.retrieveForums());
 	}
 

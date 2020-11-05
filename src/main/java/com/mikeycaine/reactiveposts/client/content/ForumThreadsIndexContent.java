@@ -30,13 +30,13 @@ public class ForumThreadsIndexContent extends AbstractContent {
 
 	private Stream<Thread> threadStreamFromPage() {
 		return forumElementFromResponseBody(content)
-			.map(forumElement -> threadsFromForumElement(forumElement))
+			.map(this::threadsFromForumElement)
 			.orElse(Stream.empty());
 	}
 
 	private Stream<Thread> threadsFromForumElement(Element forumElement) {
 		return forumElement.getElementsByClass("thread").stream()
-			.flatMap(threadElement -> parseThreadElement(threadElement));
+			.flatMap(this::parseThreadElement);
 	}
 
 
@@ -61,7 +61,12 @@ public class ForumThreadsIndexContent extends AbstractContent {
 		int threadId = optThreadId.get();
 
 		Optional<String> optThreadTitle = threadElement
-			.getElementsByClass("info").stream().flatMap(info -> info.getElementsByTag("a").stream()).findFirst().map(el -> el.text());
+			.getElementsByClass("info")
+			.stream()
+			.flatMap(info -> info.getElementsByTag("a")
+				.stream())
+			.findFirst()
+			.map(Element::text);
 		if (optThreadTitle.isEmpty()) {
 			return Stream.empty();
 		}
