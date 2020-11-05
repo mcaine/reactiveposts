@@ -18,18 +18,19 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEvent> {
-
 	private final ForumsService forumsService;
+
+	private final int MAX_CONCURRENCY = 1;
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
-	private Duration threadUpdateInterval = Duration.ofMinutes(5);
-	private Duration postUpdateInterval = Duration.ofSeconds(60);
+	private Duration threadUpdateInterval = Duration.ofSeconds(10);
+	private Duration postUpdateInterval = Duration.ofSeconds(5);
 
 	@Override
 	public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
-		forumsService.updateForums();
+		forumsService.updateForums().subscribe();
 		start();
 	}
 
@@ -37,15 +38,21 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 		threadUpdates.ifPresent(Disposable::dispose);
 		postUpdates.ifPresent(Disposable::dispose);
 
-		threadUpdates = Optional.of(Flux.interval(threadUpdateInterval).flatMap(l -> {
-			log.info("Update threads [{}]", l);
+		threadUpdates = Optional.of(Flux.interval(threadUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
+			log.info("Updating threads [{}]", l);
 			return forumsService.updateThreads();
-		}).subscribe());
+		}), MAX_CONCURRENCY).subscribe(
+			thread -> {},
+			t -> log.error("FAILED when updating threads " + t.getMessage())
+		));
 
-		postUpdates = Optional.of(Flux.interval(postUpdateInterval).flatMap(l -> {
-			log.info("Update posts [{}]", l);
+		postUpdates = Optional.of(Flux.interval(postUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
+			log.info("Updating posts [{}]", l);
 			return forumsService.updatePosts();
-		}).subscribe());
+		}), MAX_CONCURRENCY).subscribe(
+			post -> {},
+			t -> log.error("FAILED when updating posts " + t.getMessage())
+		));
 	}
 }
 
