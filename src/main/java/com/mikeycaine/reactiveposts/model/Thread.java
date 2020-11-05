@@ -35,9 +35,15 @@ public class Thread {
 
 	@Getter
 	@Setter
-//	@ManyToOne(cascade = CascadeType.ALL)
-//	@JoinColumn(nullable = false)
+	private int pagesGot;
+
+	@Getter
+	@Setter
 	private int authorId;
+
+	@Getter @Setter
+	@Column
+	private boolean subscribed;
 
 	public static Thread withId(int id) {
 		Thread t = new Thread();

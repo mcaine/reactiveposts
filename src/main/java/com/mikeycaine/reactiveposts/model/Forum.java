@@ -38,6 +38,10 @@ public class Forum {
 	@ToString.Include
 	private String name;
 
+	@Getter @Setter
+	@Column
+	private boolean subscribed;
+
 	@Getter
 	@OneToMany(
 		mappedBy = "forum",
@@ -48,7 +52,10 @@ public class Forum {
 	private Set<Thread> threads = new HashSet<>();
 
 	@Getter
-	@OneToMany
+	@OneToMany(
+		cascade = CascadeType.ALL,
+		orphanRemoval = true
+	)
 	private Set<Forum> subForums = new HashSet<>();
 
 	public String desc() {
