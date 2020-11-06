@@ -1,12 +1,16 @@
 package com.mikeycaine.reactiveposts.client;
 
+import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -27,18 +31,23 @@ public class ClientTestUtils {
 		};
 	}
 
-	Consumer<Forum> printForum() {
-		return forum -> log.info("\n" + forum.prettyPrint());
+	Consumer<MainForumIndex> printMainForumIndex() {
+		return mainForumIndex ->
+			log.info(mainForumIndex
+						.getForums().stream()
+						.map(Forum::prettyPrint)
+						.collect(Collectors.joining("\n")));
 	}
+
 	Consumer<Post> printPost() {
 		return post -> log.info("\n" + post);
 	}
 
-	public void logForumsFlux(Flux<Forum> forumFlux) {
+	public void logMainForumsIndex(Mono<MainForumIndex> mainForumIndexMono) {
 		CountDownLatch finishedSignal = new CountDownLatch(1);
 
-		forumFlux
-			.subscribe(printForum(), errorHandler(finishedSignal), signalCompleteTo(finishedSignal));
+		mainForumIndexMono
+			.subscribe(printMainForumIndex(), errorHandler(finishedSignal), signalCompleteTo(finishedSignal));
 
 		try {
 			finishedSignal.await();

@@ -1,6 +1,6 @@
 package com.mikeycaine.reactiveposts.client.content;
 
-import com.mikeycaine.reactiveposts.model.Author;
+import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Thread;
 import org.jsoup.Jsoup;
@@ -8,20 +8,25 @@ import org.jsoup.nodes.Element;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ForumThreadsIndexContent extends AbstractContent {
+public class ThreadsIndexContent extends AbstractContent<ThreadsIndex> {
 
 	private final Forum forum;
 	private final int pageNum;
 
-	public ForumThreadsIndexContent(String content, Forum forum, int pageNum) {
+	public ThreadsIndexContent(String content, Forum forum, int pageNum) {
 		super(content);
 		this.forum = forum;
 		this.pageNum = pageNum;
+	}
+
+	@Override
+	public ThreadsIndex parsed() {
+		return new ThreadsIndex(forum, pageNum, threadStreamFromPage().collect(Collectors.toUnmodifiableList()));
 	}
 
 	public Flux<Thread> parseToThreadsFlux() {
@@ -29,6 +34,7 @@ public class ForumThreadsIndexContent extends AbstractContent {
 	}
 
 	private Stream<Thread> threadStreamFromPage() {
+		ensureContentPresent();
 		return forumElementFromResponseBody(content)
 			.map(this::threadsFromForumElement)
 			.orElse(Stream.empty());

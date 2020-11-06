@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.client.content;
 
+import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-public class PostsPageContent extends AbstractContent {
+public class PostsPageContent extends AbstractContent<PostsPage> {
 	final Thread thread;
 	final int pageNum;
 
@@ -30,6 +32,19 @@ public class PostsPageContent extends AbstractContent {
 		super(content);
 		this.thread = thread;
 		this.pageNum = pageNum;
+	}
+
+	@Override
+	public PostsPage parsed() {
+		ensureContentPresent();
+
+		Element bodyElement = Jsoup.parse(content).body();
+		Optional<Integer> optLastPageNumber = lastPageNumber(bodyElement);
+		Element threadElement = bodyElement.getElementById("thread");
+		checkThreadId(threadElement, thread);
+		List<Post> posts = postsFromThreadElement(threadElement).collect(Collectors.toUnmodifiableList());
+
+		return new PostsPage(posts, thread, pageNum, optLastPageNumber);
 	}
 
 	public Flux<Post> parseToPostsFlux() {
@@ -43,23 +58,19 @@ public class PostsPageContent extends AbstractContent {
 	}
 
 	private Optional<Element> threadElementFromContent() {
-		if (null == content || content.isEmpty() || content.isBlank()) {
-			return Optional.empty();
-		}
+		ensureContentPresent();
 
 		Element bodyElement = Jsoup.parse(content).body();
-		Optional<Integer> optLastPageNumber = lastPageNumber(bodyElement);
-
 		Element threadElement = bodyElement.getElementById("thread");
 		if (threadElement != null) {
-			checkThreadId(threadElement, thread.getId());
+			checkThreadId(threadElement, thread);
 			return Optional.of(threadElement);
 		} else {
 			return Optional.empty();
 		}
 	}
 
-	public Stream<Post> postsFromThreadElement(Element threadElement) {
+	Stream<Post> postsFromThreadElement(Element threadElement) {
 		return threadElement.getElementsByClass("post").stream()
 			.flatMap(this::parsePost);
 	}
@@ -161,11 +172,11 @@ public class PostsPageContent extends AbstractContent {
 		post.setPageNum(pageNum);
 
 		author.getPosts().add(post);
+
 		return Stream.of(post);
 	}
 
-
-	public String cleanBodyHtml(String rawPostBodyHtml) {
+	String cleanBodyHtml(String rawPostBodyHtml) {
 		return rawPostBodyHtml
 				.replace("<!-- google_ad_section_start -->", "")
 				.replace("<!-- google_ad_section_end -->", "")
@@ -173,15 +184,21 @@ public class PostsPageContent extends AbstractContent {
 				.trim();
 	}
 
-	private void checkThreadId(Element thread, long threadId) {
-		String threadIdStr = thread.classNames().stream()
+	private void checkThreadId(Element threadElement, Thread thread) {
+		if (threadElement == null) {
+			log.error("Missing thread element, expected element for thread " + thread.getId());
+			return;
+		}
+
+		int elementsThreadId = threadElement.classNames().stream()
 			.filter(s -> s.startsWith("thread:"))
 			.map(s -> s.substring(7))
 			.findFirst()
-			.orElseThrow(() -> new RuntimeException("Can't get Thread Id"));
+			.map(Integer::parseInt)
+			.orElseThrow(() -> new RuntimeException("Can't get thread ID from thread element"));
 
-		if (!String.valueOf(threadId).equals(threadIdStr)) {
-			throw new RuntimeException("Different thread id, expected " + threadId + " but got " + threadIdStr);
+		if (elementsThreadId != thread.getId()) {
+			throw new RuntimeException("Different thread id, expected " + thread.getId() + " but got " + elementsThreadId);
 		}
 	}
 

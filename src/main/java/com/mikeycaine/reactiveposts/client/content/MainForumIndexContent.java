@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.client.content;
 
 import com.mikeycaine.reactiveposts.client.content.AbstractContent;
+import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -14,9 +15,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MainForumIndexContent extends AbstractContent {
+public class MainForumIndexContent extends AbstractContent<MainForumIndex> {
 	public MainForumIndexContent(String content) {
 		super(content);
+	}
+
+	@Override
+	public MainForumIndex parsed() {
+		return new MainForumIndex(forumStreamFromPage().collect(Collectors.toUnmodifiableList()));
 	}
 
 	public Flux<Forum> parseMainForumIndexPage() {
@@ -24,6 +30,7 @@ public class MainForumIndexContent extends AbstractContent {
 	}
 
 	private Stream<Forum> forumStreamFromPage() {
+		ensureContentPresent();
 		Element body = Jsoup.parse(content).body();
 		Elements forumElements = body.getElementById("forums").getElementsByClass("forum");
 

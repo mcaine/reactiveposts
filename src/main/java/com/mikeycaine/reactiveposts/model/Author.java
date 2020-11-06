@@ -20,22 +20,21 @@ public class Author {
 
 	@Getter
 	@Setter
+	@Column
 	private String name;
 
 	@Getter
 	@Setter
+	@Column
 	private String titleURL;
 
 	@Getter
 	@Setter
+	@Column(columnDefinition = "TEXT")
 	private String titleText;
 
 
 	@OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@Getter
 	private Set<Post> posts = new HashSet<>();
-
-//	@OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//	@Getter
-//	private Set<Thread> threads = new HashSet<>();
 }

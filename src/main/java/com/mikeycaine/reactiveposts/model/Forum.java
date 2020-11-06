@@ -19,12 +19,14 @@ public class Forum {
 	public Forum(Integer forumId, String forumName, Set<Forum> subForums) {
 		this.id = forumId;
 		this.name = forumName;
+		this.topLevelForum = true;
 		this.subForums = subForums;
 	}
 
 	public Forum(Integer forumId, String forumName) {
 		this.id = forumId;
 		this.name = forumName;
+		this.topLevelForum = false;
 	}
 
 	@Getter @Setter
@@ -38,6 +40,14 @@ public class Forum {
 	@ToString.Include
 	private String name;
 
+	@Getter @Setter
+	@Column
+	private boolean subscribed;
+
+	@Getter @Setter
+	@Column
+	private boolean topLevelForum;
+
 	@Getter
 	@OneToMany(
 		mappedBy = "forum",
@@ -48,7 +58,10 @@ public class Forum {
 	private Set<Thread> threads = new HashSet<>();
 
 	@Getter
-	@OneToMany
+	@OneToMany(
+		cascade = CascadeType.ALL,
+		orphanRemoval = true
+	)
 	private Set<Forum> subForums = new HashSet<>();
 
 	public String desc() {
