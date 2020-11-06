@@ -2,6 +2,8 @@ package com.mikeycaine.reactiveposts.service;
 
 import com.mikeycaine.reactiveposts.client.Client;
 import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
+import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
+import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
@@ -29,6 +31,8 @@ public class ForumsService {
 	private final ThreadRepository threadRepository;
 	private final Client client;
 
+	final int MAX_CONCURRENCY = 1;
+
 	public Mono<MainForumIndex> updateForums() {
 		if (forumRepository.count() == 0) {
 			log.info("No forums found, initialising...");
@@ -43,29 +47,30 @@ public class ForumsService {
 		log.info(forumRepository.count() + " forums");
 	}
 
-	public Flux<Thread> updateThreads() {
+	public Flux<ThreadsIndex> updateThreads() {
 		return Flux.fromIterable(forumRepository.subscribedForums())
-			.flatMapSequential(forum -> client.retrieveThreads(forum, 1))
-			.doOnNext(this::mergeThreadInfo);
+			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, 1), MAX_CONCURRENCY)
+			.doOnNext(threadsIndex -> {
+				threadRepository.saveAll(threadsIndex.getThreads());
+			});
 	}
 
-	public Flux<Post> updatePosts() {
+	public Flux<PostsPage> updatePosts() {
 		return Flux.fromIterable(threadRepository.subscribedThreads())
 			.flatMapSequential(thread -> {
 				log.info("I'm subscribed to " + thread);
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
 					final int nextPage = thread.getPagesGot() + 1;
 					return client.retrievePosts(thread, nextPage)
-						.doOnNext(postRepository::save)
-						.doOnComplete(() -> {
-							thread.setPagesGot(nextPage);
-							threadRepository.save(thread);
-					});
-
+						.doOnNext(postsPage -> {
+							postRepository.saveAll(postsPage.getPosts());
+							thread.setPagesGot(postsPage.getMaxPageNum());
+							threadRepository.save(postsPage.getThread());
+						});
 				} else {
-					return Flux.<Post>empty();
+					return Mono.empty();
 				}
-			});
+			}, MAX_CONCURRENCY);
 	}
 
 	public Thread mergeThreadInfo(Thread thread) {

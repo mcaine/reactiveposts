@@ -4,6 +4,8 @@ import com.mikeycaine.reactiveposts.client.content.ThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.MainForumIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
 import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
+import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
+import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.*;
 import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.RequiredArgsConstructor;
@@ -33,30 +35,29 @@ public class ReactiveSAClient implements Client {
 	}
 
 	@Override
-	public Flux<Thread> retrieveThreads(Forum forum, int pageId) {
+	public Mono<ThreadsIndex> retrieveThreads(Forum forum, int pageId) {
 		return forumThreadsIndexContent(forum, pageId)
-			.flatMapMany(ThreadsIndexContent::parseToThreadsFlux);
+			.map(ThreadsIndexContent::parsed);
 	}
 
 	@Override
-	public Flux<Thread> retrieveThreads(Forum forum, int startPageId, int endPageId) {
+	public Flux<ThreadsIndex> retrieveThreads(Forum forum, int startPageId, int endPageId) {
 		log.info("Retrieving threads for " + forum + ", Pages=" + startPageId + " -> " + endPageId + ")");
 		int count = validatePageRangeParams(startPageId, endPageId);
 		return Flux.range(startPageId, count)
 			.flatMapSequential(pageId -> Flux.defer(() -> retrieveThreads(forum, pageId)), MAX_CONCURRENT_REQUESTS);
-
 	}
 
 	@Override
-	public Flux<Post> retrievePosts(Thread thread, int pageId) {
+	public Mono<PostsPage> retrievePosts(Thread thread, int pageId) {
 		log.info("Retrieving posts for " + thread.getId() + ", Page=" + pageId + ")");
 		validatePageIdParam(pageId);
 		return postsPageContent(thread, pageId)
-			.flatMapMany(PostsPageContent::parseToPostsFlux);
+			.map(PostsPageContent::parsed);
 	}
 
 	@Override
-	public Flux<Post> retrievePosts(Thread thread, int startPageId, int endPageId) {
+	public Flux<PostsPage> retrievePosts(Thread thread, int startPageId, int endPageId) {
 		log.info("Retrieving posts for " + thread + ", Pages=" + startPageId + "->" + endPageId + ")");
 		int count = validatePageRangeParams(startPageId, endPageId);
 		return Flux.range(startPageId, count)

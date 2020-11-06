@@ -56,7 +56,7 @@ class ReactivePostsApplicationTests  {
 		forumsService.subscribeToForum(cspam);
 
 		StepVerifier.create(forumsService.updateThreads())
-			.expectNextCount(40)
+			.expectNextCount(1)
 			.verifyComplete();
 
 		List<Thread> threads = threadRepository.findAll();
@@ -68,8 +68,7 @@ class ReactivePostsApplicationTests  {
 		forumsService.subscribeToThread(thread);
 
 		StepVerifier.create(forumsService.updatePosts())
-			.consumeNextWith(post -> log.info("Heres a post: " + post))
-			.expectNextCount(39)
+			.consumeNextWith(post -> log.info("Heres a posts page: " + post))
 			.verifyComplete();
 
 		assertTrue(40 == postRepository.count());

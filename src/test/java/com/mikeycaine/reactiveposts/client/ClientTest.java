@@ -31,7 +31,15 @@ public class ClientTest extends ClientTestUtils {
 	public void testRetrieveThreadsIndexForForum() {
 		Forum gbs = new Forum(273, "General Bullshit");
 		StepVerifier.create(client.retrieveThreads(gbs, 1))
-			.expectNextCount(40L)
+			.expectNextCount(1L)
+			.verifyComplete();
+	}
+
+	@Test
+	public void testRetrieveThreadsIndexForForumMultiplePages() {
+		Forum gbs = new Forum(273, "General Bullshit");
+		StepVerifier.create(client.retrieveThreads(gbs, 1, 3))
+			.expectNextCount(3L)
 			.verifyComplete();
 	}
 
