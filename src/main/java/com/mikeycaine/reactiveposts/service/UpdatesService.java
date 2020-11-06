@@ -52,8 +52,8 @@ public class UpdatesService {
 	}
 
 	public void updateForums() {
-		forumsService.updateForums().collectList().subscribe(
-			forums -> log.info("There are {} forums", forums.size()),
+		forumsService.updateForums().subscribe(
+			mainForumIndex -> log.info("There are {} forums", mainForumIndex.getForums().size()),
 			t -> log.error("FAILED when getting list of forums: " + t.getMessage())
 		);
 	}

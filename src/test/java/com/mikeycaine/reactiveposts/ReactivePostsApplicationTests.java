@@ -46,7 +46,7 @@ class ReactivePostsApplicationTests  {
 	@Test
 	void testIt() throws Exception {
 		StepVerifier.create(forumsService.updateForums())
-			.expectNextCount(29)
+			.expectNextCount(1)
 			.verifyComplete();
 
 		Optional<Forum> optCspam = forumRepository.findById(CSPAM_FORUM_ID);

@@ -1,6 +1,6 @@
 package com.mikeycaine.reactiveposts.client;
 
-import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
+import com.mikeycaine.reactiveposts.client.content.ThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Thread;
@@ -17,17 +17,14 @@ public class ClientTest extends ClientTestUtils {
 
 	@Test
 	public void testRetrieveForums() {
-		StepVerifier.create(client.retrieveForums())
-			.expectNextMatches(forum -> forum.getId() == 273
-				&& forum.getName().equals("General Bullshit")
-				&& forum.getSubForums().size() == 3)
-			.expectNextCount(28L)
+		StepVerifier.create(client.retrieveMainForumIndex())
+			.expectNextMatches(mainForumIndex -> mainForumIndex.getForums().size() == 29)
 			.verifyComplete();
 	}
 
 	@Test
 	public void testPrintForums() {
-		logForumsFlux(client.retrieveForums());
+		logMainForumsIndex(client.retrieveMainForumIndex());
 	}
 
 	@Test
@@ -42,7 +39,7 @@ public class ClientTest extends ClientTestUtils {
 	public void testParseThreadsIndex() {
 		Forum goonsWithSpoons = new Forum(161, "Goons with spoons");
 		StepVerifier.create(
-			IndexPageSpec.of(goonsWithSpoons, 4).cachedContentMono().flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux)
+			IndexPageSpec.of(goonsWithSpoons, 4).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
 		)
 			.expectNextMatches(thread -> thread.getName().equals("ICSA 69: Breakfast Voting Thread"))
 			.expectNextCount(29L) // this forum has 30 posts per index page for some reason???
@@ -53,7 +50,7 @@ public class ClientTest extends ClientTestUtils {
 	public void testParseThreadsIndex2() {
 		Forum iyg = new Forum(192, "Inspect your gadgets");
 		StepVerifier.create(
-			IndexPageSpec.of(iyg, 5).cachedContentMono().flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux)
+			IndexPageSpec.of(iyg, 5).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
 		)
 			.expectNextMatches(thread -> thread.getName().equals("Like-new Huawei Watch steel link, Android/iOS watch, near-perfect condition"))
 			.expectNextCount(29L)  // this forum has 30 posts per index page for some reason???
@@ -64,7 +61,7 @@ public class ClientTest extends ClientTestUtils {
 	public void testParseThreadsIndex3() {
 		Forum iyg = new Forum(273, "GBS");
 		StepVerifier.create(
-			IndexPageSpec.of(iyg, 6).cachedContentMono().flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux)
+			IndexPageSpec.of(iyg, 6).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
 		)
 			.expectNextMatches(thread -> thread.getName().equals("Other times I don't make a thread"))
 			.expectNextCount(39L)

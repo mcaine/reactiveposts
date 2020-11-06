@@ -2,7 +2,6 @@ package com.mikeycaine.reactiveposts.testdata;
 
 import com.mikeycaine.reactiveposts.client.ReactiveSAClient;
 import com.mikeycaine.reactiveposts.client.WebClientConfig;
-import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
 import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.RequiredArgsConstructor;

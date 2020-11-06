@@ -1,22 +1,19 @@
 package com.mikeycaine.reactiveposts.client;
 
-import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
+import com.mikeycaine.reactiveposts.client.content.ThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.MainForumIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
+import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.model.*;
 import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-
-import java.util.Optional;
 
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageIdParam;
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageRangeParams;
@@ -30,15 +27,15 @@ public class ReactiveSAClient implements Client {
 	private final WebClient webClient;
 
 	@Override
-	public Flux<Forum> retrieveForums() {
+	public Mono<MainForumIndex> retrieveMainForumIndex() {
 		return mainForumIndexContent()
-			.flatMapMany(MainForumIndexContent::parseMainForumIndexPage);
+			.map(MainForumIndexContent::parsed);
 	}
 
 	@Override
 	public Flux<Thread> retrieveThreads(Forum forum, int pageId) {
 		return forumThreadsIndexContent(forum, pageId)
-			.flatMapMany(ForumThreadsIndexContent::parseToThreadsFlux);
+			.flatMapMany(ThreadsIndexContent::parseToThreadsFlux);
 	}
 
 	@Override
@@ -87,9 +84,9 @@ public class ReactiveSAClient implements Client {
 			.map(MainForumIndexContent::new);
 	}
 
-	private Mono<ForumThreadsIndexContent> forumThreadsIndexContent(Forum forum, int pageNum) {
+	private Mono<ThreadsIndexContent> forumThreadsIndexContent(Forum forum, int pageNum) {
 		return retrieveBodyAsMono(Urls.forumThreadsIndexAddress(forum.getId(), pageNum))
-			.map(body -> new ForumThreadsIndexContent(body, forum, pageNum));
+			.map(body -> new ThreadsIndexContent(body, forum, pageNum));
 	}
 
 	private Mono<PostsPageContent> postsPageContent(Thread thread, int pageNum) {

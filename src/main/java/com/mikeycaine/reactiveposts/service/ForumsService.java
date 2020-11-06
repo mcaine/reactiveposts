@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.service;
 
 import com.mikeycaine.reactiveposts.client.Client;
+import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.transaction.Transactional;
 
@@ -27,12 +29,13 @@ public class ForumsService {
 	private final ThreadRepository threadRepository;
 	private final Client client;
 
-	public Flux<Forum> updateForums() {
+	public Mono<MainForumIndex> updateForums() {
 		if (forumRepository.count() == 0) {
 			log.info("No forums found, initialising...");
-			return client.retrieveForums().doOnNext(forumRepository::save);
+			Mono<MainForumIndex> mainForumIndexMono = client.retrieveMainForumIndex();
+			return mainForumIndexMono.doOnNext(mainForumIndex -> forumRepository.saveAll(mainForumIndex.getForums()));
 		} else {
-			return Flux.fromIterable(forumRepository.findAll());
+			return Mono.just(new MainForumIndex(forumRepository.findAll()));
 		}
 	}
 

@@ -1,6 +1,6 @@
 package com.mikeycaine.reactiveposts.testdata;
 
-import com.mikeycaine.reactiveposts.client.content.ForumThreadsIndexContent;
+import com.mikeycaine.reactiveposts.client.content.ThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.ReactiveSAClient;
 import com.mikeycaine.reactiveposts.client.Urls;
 import com.mikeycaine.reactiveposts.client.WebClientConfig;
@@ -61,11 +61,11 @@ public class IndexPageSpec implements Directories {
 		}
 	}
 
-	public Mono<ForumThreadsIndexContent> cachedContentMono() {
+	public Mono<ThreadsIndexContent> cachedContentMono() {
 		try {
 			Path path = this.indexPagePath();
 			if (Files.exists(path)) {
-				return Mono.just(new ForumThreadsIndexContent(Files.readString(path, StandardCharsets.UTF_8), forum, pageNum));
+				return Mono.just(new ThreadsIndexContent(Files.readString(path, StandardCharsets.UTF_8), forum, pageNum));
 			} else {
 				log.warn("Test file " + path + "not found");
 				return Mono.empty();
