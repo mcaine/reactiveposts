@@ -18,8 +18,8 @@ import reactor.core.publisher.Mono;
 
 import javax.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -48,10 +48,13 @@ public class ForumsService {
 	}
 
 	public Flux<ThreadsIndex> updateThreads() {
-		return Flux.fromIterable(forumRepository.subscribedForums())
+		List<Forum> subscribedForums = forumRepository.subscribedForums();
+		log.info("Updating threads for " + subscribedForums.size() + " subscribed forums");
+
+		return Flux.fromIterable(subscribedForums)
 			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, 1), MAX_CONCURRENCY)
 			.doOnNext(threadsIndex -> {
-				threadRepository.saveAll(threadsIndex.getThreads());
+				threadsIndex.getThreads().forEach(this::mergeThreadInfo);
 			});
 	}
 
@@ -60,12 +63,15 @@ public class ForumsService {
 			.flatMapSequential(thread -> {
 				log.info("I'm subscribed to " + thread);
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
-					final int nextPage = thread.getPagesGot() + 1;
-					return client.retrievePosts(thread, nextPage)
+					final int thisPage = thread.getPagesGot() + 1;
+					return client.retrievePosts(thread, thisPage)
 						.doOnNext(postsPage -> {
+							if (thisPage < thread.getMaxPageNumber()) {
+								thread.setPagesGot(thisPage);
+							}
 							postRepository.saveAll(postsPage.getPosts());
-							thread.setPagesGot(postsPage.getMaxPageNum());
-							threadRepository.save(postsPage.getThread());
+							postsPage.getMaxPageNum().ifPresent(thread::setMaxPageNumber);
+							threadRepository.save(thread);
 						});
 				} else {
 					return Mono.empty();

@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.service;
 
+import com.mikeycaine.reactiveposts.model.Forum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,8 @@ public class UpdatesService {
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
-	private Duration threadsUpdateInterval = Duration.ofSeconds(600);
-	private Duration postsUpdateInterval = Duration.ofSeconds(60);
+	private Duration threadsUpdateInterval = Duration.ofSeconds(300);
+	private Duration postsUpdateInterval = Duration.ofSeconds(10);
 
 	public void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
@@ -53,8 +54,9 @@ public class UpdatesService {
 
 	public void updateForums() {
 		forumsService.updateForums().subscribe(
-			mainForumIndex -> log.info("There are {} main forums", mainForumIndex.getForums().size()),
-			t -> log.error("FAILED when getting list of forums: " + t.getMessage())
+			mainForumIndex -> log.info("There are {} main forums", mainForumIndex.getForums().stream().filter(Forum::isTopLevelForum).count()),
+			t -> log.error("FAILED when getting list of forums: " + t.getMessage()),
+			() -> forumsService.updateThreads().subscribe()
 		);
 	}
 }

@@ -6,10 +6,11 @@ import com.mikeycaine.reactiveposts.model.Thread;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PostsPage {
 
-	public PostsPage(List<Post> posts, Thread thread, int pageNum, int maxPageNum) {
+	public PostsPage(List<Post> posts, Thread thread, int pageNum, Optional<Integer> maxPageNum) {
 		this.posts = posts;
 		this.thread = thread;
 		this.pageNum = pageNum;
@@ -26,5 +27,5 @@ public class PostsPage {
 	private final int pageNum;
 
 	@Getter
-	private final int maxPageNum;
+	private final Optional<Integer> maxPageNum;
 }

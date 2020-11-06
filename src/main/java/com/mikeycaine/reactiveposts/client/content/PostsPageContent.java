@@ -44,7 +44,7 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 		checkThreadId(threadElement, thread);
 		List<Post> posts = postsFromThreadElement(threadElement).collect(Collectors.toUnmodifiableList());
 
-		return new PostsPage(posts, thread, pageNum, optLastPageNumber.orElse(-1));
+		return new PostsPage(posts, thread, pageNum, optLastPageNumber);
 
 
 	}
@@ -246,7 +246,7 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 					.map(el -> el.attr("href")))
 			.findFirst();
 
-		log.debug("Link to last page: " + optLinkToLastPage);
+		log.info("Link to last page: " + optLinkToLastPage);
 
 		return optLinkToLastPage.flatMap(link -> {
 			Matcher matcher = Pattern.compile("(.*)pagenumber=(\\d+)").matcher(link);

@@ -86,6 +86,7 @@ public class ReactiveSAClient implements Client {
 	}
 
 	private Mono<ThreadsIndexContent> forumThreadsIndexContent(Forum forum, int pageNum) {
+		log.info("Retrieving thread index for " + forum + " page " + pageNum);
 		return retrieveBodyAsMono(Urls.forumThreadsIndexAddress(forum.getId(), pageNum))
 			.map(body -> new ThreadsIndexContent(body, forum, pageNum));
 	}

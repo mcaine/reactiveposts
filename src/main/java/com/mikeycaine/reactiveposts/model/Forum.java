@@ -19,12 +19,14 @@ public class Forum {
 	public Forum(Integer forumId, String forumName, Set<Forum> subForums) {
 		this.id = forumId;
 		this.name = forumName;
+		this.topLevelForum = true;
 		this.subForums = subForums;
 	}
 
 	public Forum(Integer forumId, String forumName) {
 		this.id = forumId;
 		this.name = forumName;
+		this.topLevelForum = false;
 	}
 
 	@Getter @Setter
@@ -41,6 +43,10 @@ public class Forum {
 	@Getter @Setter
 	@Column
 	private boolean subscribed;
+
+	@Getter @Setter
+	@Column
+	private boolean topLevelForum;
 
 	@Getter
 	@OneToMany(
