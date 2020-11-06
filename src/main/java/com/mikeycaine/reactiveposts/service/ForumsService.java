@@ -36,7 +36,7 @@ public class ForumsService {
 		}
 	}
 
-	private void reportForumCount() {
+	public void reportForumCount() {
 		log.info(forumRepository.count() + " forums");
 	}
 

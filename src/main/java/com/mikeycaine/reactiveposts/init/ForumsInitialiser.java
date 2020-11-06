@@ -25,8 +25,8 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
-	private Duration threadUpdateInterval = Duration.ofSeconds(10);
-	private Duration postUpdateInterval = Duration.ofSeconds(5);
+	private Duration threadsUpdateInterval = Duration.ofSeconds(600);
+	private Duration postsUpdateInterval = Duration.ofSeconds(60);
 
 	@Override
 	public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
@@ -38,20 +38,20 @@ public class ForumsInitialiser implements ApplicationListener<ApplicationReadyEv
 		threadUpdates.ifPresent(Disposable::dispose);
 		postUpdates.ifPresent(Disposable::dispose);
 
-		threadUpdates = Optional.of(Flux.interval(threadUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
+		threadUpdates = Optional.of(Flux.interval(threadsUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
 			log.info("Updating threads [{}]", l);
 			return forumsService.updateThreads();
 		}), MAX_CONCURRENCY).subscribe(
 			thread -> {},
-			t -> log.error("FAILED when updating threads " + t.getMessage())
+			t -> log.error("FAILED when updating forum threads: " + t.getMessage())
 		));
 
-		postUpdates = Optional.of(Flux.interval(postUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
+		postUpdates = Optional.of(Flux.interval(postsUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
 			log.info("Updating posts [{}]", l);
 			return forumsService.updatePosts();
 		}), MAX_CONCURRENCY).subscribe(
 			post -> {},
-			t -> log.error("FAILED when updating posts " + t.getMessage())
+			t -> log.error("FAILED when updating thread posts: " + t.getMessage())
 		));
 	}
 }
