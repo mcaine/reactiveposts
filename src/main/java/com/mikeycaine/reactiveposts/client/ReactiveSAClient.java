@@ -43,7 +43,9 @@ public class ReactiveSAClient implements Client {
 
 	@Override
 	public Flux<ThreadsIndex> retrieveThreads(Forum forum, int startPageId, int endPageId) {
-		log.info("Retrieving threads for {}, pages {} -> {}", forum.toString(), startPageId, endPageId );
+		if (startPageId != endPageId) {
+			log.info("Retrieving threads for {}, pages {} -> {}", forum.toString(), startPageId, endPageId );
+		}
 		int count = validatePageRangeParams(startPageId, endPageId);
 		return Flux.range(startPageId, count)
 			.flatMapSequential(pageId -> Flux.defer(() -> retrieveThreads(forum, pageId)), MAX_CONCURRENT_REQUESTS);
@@ -51,7 +53,7 @@ public class ReactiveSAClient implements Client {
 
 	@Override
 	public Mono<PostsPage> retrievePosts(Thread thread, int pageId) {
-		log.info("Retrieving posts for {}, page {}", thread.toString(), pageId);
+		log.info("Retrieving posts for {}, page {} of {}", thread.toString(), pageId, thread.getMaxPageNumber());
 		validatePageIdParam(pageId);
 		return postsPageContent(thread, pageId)
 			.map(PostsPageContent::parsed);
@@ -59,7 +61,9 @@ public class ReactiveSAClient implements Client {
 
 	@Override
 	public Flux<PostsPage> retrievePosts(Thread thread, int startPageId, int endPageId) {
-		log.info("Retrieving posts for {}, pages {} -> {}", thread.toString(), startPageId, endPageId);
+		if (startPageId != endPageId) {
+			log.info("Retrieving posts for {}, pages {} -> {}", thread.toString(), startPageId, endPageId);
+		}
 		int count = validatePageRangeParams(startPageId, endPageId);
 		return Flux.range(startPageId, count)
 			.flatMapSequential(pageId -> Flux.defer(() -> retrievePosts(thread, pageId)), MAX_CONCURRENT_REQUESTS);

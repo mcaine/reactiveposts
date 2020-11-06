@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.service;
 
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,18 +17,16 @@ import java.util.Optional;
 public class UpdatesService {
 
 	private final ForumsService forumsService;
+	private final UpdatesConfig config;
 
 	private final int MAX_CONCURRENCY = 1;
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
-	private Duration threadsUpdateInterval = Duration.ofSeconds(300);
-	private Duration postsUpdateInterval = Duration.ofSeconds(10);
-
 	public void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
-		threadUpdates = Optional.of(Flux.interval(threadsUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
+		threadUpdates = Optional.of(Flux.interval(config.getThreadsUpdateInterval()).flatMapSequential(l -> Flux.defer(() -> {
 			log.info("Updating threads [{}]", l);
 			return forumsService.updateThreads();
 		}), MAX_CONCURRENCY).subscribe(
@@ -38,7 +37,7 @@ public class UpdatesService {
 
 	public void startPostUpdates() {
 		postUpdates.ifPresent(Disposable::dispose);
-		postUpdates = Optional.of(Flux.interval(postsUpdateInterval).flatMapSequential(l -> Flux.defer(() -> {
+		postUpdates = Optional.of(Flux.interval(config.getPostsUpdateInterval()).flatMapSequential(l -> Flux.defer(() -> {
 			log.info("Updating posts [{}]", l);
 			return forumsService.updatePosts();
 		}), MAX_CONCURRENCY).subscribe(

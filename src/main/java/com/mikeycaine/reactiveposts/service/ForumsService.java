@@ -70,7 +70,7 @@ public class ForumsService {
 							if (thisPage < thread.getMaxPageNumber()) {
 								thread.setPagesGot(thisPage);
 							}
-							log.info("Persisting {} posts for {}", postsPage.getPosts().size(), thread.toString());
+							log.info("Persisting {} posts for page {} of {}", postsPage.getPosts().size(), postsPage.getPageNum(), thread.toString());
 							postRepository.saveAll(postsPage.getPosts());
 							threadRepository.save(thread);
 						});
