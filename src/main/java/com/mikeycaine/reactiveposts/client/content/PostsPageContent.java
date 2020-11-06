@@ -45,8 +45,6 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 		List<Post> posts = postsFromThreadElement(threadElement).collect(Collectors.toUnmodifiableList());
 
 		return new PostsPage(posts, thread, pageNum, optLastPageNumber);
-
-
 	}
 
 	public Flux<Post> parseToPostsFlux() {
@@ -174,6 +172,7 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 		post.setPageNum(pageNum);
 
 		author.getPosts().add(post);
+
 		return Stream.of(post);
 	}
 
@@ -246,7 +245,7 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 					.map(el -> el.attr("href")))
 			.findFirst();
 
-		log.info("Link to last page: " + optLinkToLastPage);
+		log.debug("Link to last page: " + optLinkToLastPage);
 
 		return optLinkToLastPage.flatMap(link -> {
 			Matcher matcher = Pattern.compile("(.*)pagenumber=(\\d+)").matcher(link);

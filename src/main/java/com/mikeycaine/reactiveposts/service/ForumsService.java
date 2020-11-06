@@ -49,7 +49,7 @@ public class ForumsService {
 
 	public Flux<ThreadsIndex> updateThreads() {
 		List<Forum> subscribedForums = forumRepository.subscribedForums();
-		log.info("Updating threads for " + subscribedForums.size() + " subscribed forums");
+		log.info("Updating threads for {} subscribed forum{}", subscribedForums.size(), (subscribedForums.size() == 1 ? "" : "s"));
 
 		return Flux.fromIterable(subscribedForums)
 			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, 1), MAX_CONCURRENCY)
@@ -61,16 +61,17 @@ public class ForumsService {
 	public Flux<PostsPage> updatePosts() {
 		return Flux.fromIterable(threadRepository.subscribedThreads())
 			.flatMapSequential(thread -> {
-				log.info("I'm subscribed to " + thread);
+				log.info("Subscribed to {}...", thread.toString());
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
 					final int thisPage = thread.getPagesGot() + 1;
 					return client.retrievePosts(thread, thisPage)
 						.doOnNext(postsPage -> {
+							postsPage.getMaxPageNum().ifPresent(thread::setMaxPageNumber);
 							if (thisPage < thread.getMaxPageNumber()) {
 								thread.setPagesGot(thisPage);
 							}
+							log.info("Persisting {} posts for {}", postsPage.getPosts().size(), thread.toString());
 							postRepository.saveAll(postsPage.getPosts());
-							postsPage.getMaxPageNum().ifPresent(thread::setMaxPageNumber);
 							threadRepository.save(thread);
 						});
 				} else {
