@@ -16,7 +16,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageIdParam;
 import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageRangeParams;
 
@@ -30,14 +29,17 @@ public class ReactiveSAClient implements Client {
 
 	@Override
 	public Mono<MainForumIndex> retrieveMainForumIndex() {
-		return mainForumIndexContent()
+		log.info("Retrieving list of forums");
+		return retrieveBodyAsMono(Urls.mainforumIndex())
+			.map(MainForumIndexContent::new)
 			.map(MainForumIndexContent::parsed);
 	}
 
 	@Override
-	public Mono<ThreadsIndex> retrieveThreads(Forum forum, int pageId) {
-		log.info("Retrieving threads for {}, page {}", forum.toString(), pageId);
-		return forumThreadsIndexContent(forum, pageId)
+	public Mono<ThreadsIndex> retrieveThreads(Forum forum, int pageNum) {
+		log.info("Retrieving threads for {}, page {}", forum.toString(), pageNum);
+		return retrieveBodyAsMono(Urls.forumThreadsIndexAddress(forum.getId(), pageNum))
+			.map(body -> new ThreadsIndexContent(body, forum, pageNum))
 			.map(ThreadsIndexContent::parsed);
 	}
 
@@ -48,15 +50,14 @@ public class ReactiveSAClient implements Client {
 		}
 		int count = validatePageRangeParams(startPageId, endPageId);
 		return Flux.range(startPageId, count)
-			.flatMapSequential(pageId -> Flux.defer(() -> retrieveThreads(forum, pageId)), MAX_CONCURRENT_REQUESTS);
+			.flatMapSequential(pageId -> retrieveThreads(forum, pageId), MAX_CONCURRENT_REQUESTS);
 	}
 
 	@Override
 	public Mono<PostsPage> retrievePosts(Thread thread, int pageId) {
 		log.info("Retrieving posts for {}, page {} of {}", thread.toString(), pageId, thread.getMaxPageNumber());
 		validatePageIdParam(pageId);
-		return postsPageContent(thread, pageId)
-			.map(PostsPageContent::parsed);
+		return postsPageContent(thread, pageId);
 	}
 
 	@Override
@@ -66,13 +67,15 @@ public class ReactiveSAClient implements Client {
 		}
 		int count = validatePageRangeParams(startPageId, endPageId);
 		return Flux.range(startPageId, count)
-			.flatMapSequential(pageId -> Flux.defer(() -> retrievePosts(thread, pageId)), MAX_CONCURRENT_REQUESTS);
+			.flatMapSequential(pageId -> retrievePosts(thread, pageId), MAX_CONCURRENT_REQUESTS);
 	}
 
 	@Override
 	public Mono<Integer> latestPageId(Thread thread) {
+		log.info("Getting latest page for {}", thread.toString());
 		return postsPageContent(thread, 1)
-			.flatMap(PostsPageContent::parseLatestPageId);
+			.map(PostsPage::getMaxPageNum)
+			.flatMap(optPageNum -> optPageNum.isPresent() ? Mono.just(optPageNum.get()) : Mono.empty());
 	}
 
 	public Mono<String> retrieveBodyAsMono(String url) {
@@ -83,20 +86,9 @@ public class ReactiveSAClient implements Client {
 			.bodyToMono(String.class);
 	}
 
-	////////////////////////////////////////////////////////////////////
-
-	private Mono<MainForumIndexContent> mainForumIndexContent() {
-		return retrieveBodyAsMono(Urls.mainforumIndex())
-			.map(MainForumIndexContent::new);
-	}
-
-	private Mono<ThreadsIndexContent> forumThreadsIndexContent(Forum forum, int pageNum) {
-		return retrieveBodyAsMono(Urls.forumThreadsIndexAddress(forum.getId(), pageNum))
-			.map(body -> new ThreadsIndexContent(body, forum, pageNum));
-	}
-
-	private Mono<PostsPageContent> postsPageContent(Thread thread, int pageNum) {
+	private Mono<PostsPage> postsPageContent(Thread thread, int pageNum) {
 	    return retrieveBodyAsMono(Urls.postsPageAddress(thread.getId(), pageNum))
-            .map(body -> new PostsPageContent(body, thread, pageNum));
+            .map(body -> new PostsPageContent(body, thread, pageNum))
+		    .map(PostsPageContent::parsed);
     }
 }
