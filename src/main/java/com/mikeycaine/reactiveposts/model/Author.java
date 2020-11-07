@@ -32,9 +32,4 @@ public class Author {
 	@Setter
 	@Column(columnDefinition = "TEXT")
 	private String titleText;
-
-
-	@OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@Getter
-	private Set<Post> posts = new HashSet<>();
 }

@@ -21,7 +21,7 @@ public class Post {
 	private Integer id;
 
 	@Getter @Setter
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(nullable = false)
 	private Thread thread;
 
@@ -30,7 +30,7 @@ public class Post {
 	private Integer pageNum;
 
 	@Getter @Setter
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(nullable = false)
 	private Author author;
 

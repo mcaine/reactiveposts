@@ -25,7 +25,7 @@ public class    Thread {
 
 	@Getter
 	@Setter
-	@ManyToOne //(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(nullable = false)
 	private Forum forum;
 
@@ -39,7 +39,9 @@ public class    Thread {
 
 	@Getter
 	@Setter
-	private int authorId;
+	@JoinColumn
+	@ManyToOne
+	private Author author;
 
 	@Getter @Setter
 	@Column

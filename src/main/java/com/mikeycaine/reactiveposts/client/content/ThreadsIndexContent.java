@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.client.content;
 
 import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
+import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Thread;
 import org.jsoup.Jsoup;
@@ -126,7 +127,11 @@ public class ThreadsIndexContent extends AbstractContent<ThreadsIndex> {
 		thread.setName(threadTitle);
 		thread.setMaxPageNumber(maxPageNumber);
 		thread.setForum(forum);
-		thread.setAuthorId(authorId);
+
+		Author author = new Author();
+		author.setId(authorId);
+		author.setName(authorName);
+		thread.setAuthor(author);
 
 		return Stream.of(thread);
 	}

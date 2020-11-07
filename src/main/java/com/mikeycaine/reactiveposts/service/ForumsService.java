@@ -4,9 +4,11 @@ import com.mikeycaine.reactiveposts.client.Client;
 import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
+import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
+import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
@@ -20,6 +22,7 @@ import javax.transaction.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class ForumsService {
 	private final ForumRepository forumRepository;
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
+	private final AuthorRepository authorRepository;
 	private final Client client;
 
 	final int MAX_CONCURRENCY = 1;
@@ -61,7 +65,7 @@ public class ForumsService {
 	public Flux<PostsPage> updatePosts() {
 		return Flux.fromIterable(threadRepository.subscribedThreads())
 			.flatMapSequential(thread -> {
-				log.info("Subscribed to {}...", thread.toString());
+				log.debug("We are subscribed to {}...", thread.toString());
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
 					final int thisPage = thread.getPagesGot() + 1;
 					return client.retrievePosts(thread, thisPage)
@@ -70,8 +74,11 @@ public class ForumsService {
 							if (thisPage < thread.getMaxPageNumber()) {
 								thread.setPagesGot(thisPage);
 							}
-							log.info("Persisting {} posts for page {} of {}", postsPage.getPosts().size(), postsPage.getPageNum(), thread.toString());
-							postRepository.saveAll(postsPage.getPosts());
+							List<Post> posts = postsPage.getPosts();
+							List<Author> postAuthors = posts.stream().map(Post::getAuthor).collect(Collectors.toList());
+							log.info("Persisting {} posts for page {} of {}", posts.size(), postsPage.getPageNum(), thread.toString());
+							authorRepository.saveAll(postAuthors);
+							postRepository.saveAll(posts);
 							threadRepository.save(thread);
 						});
 				} else {
@@ -88,6 +95,10 @@ public class ForumsService {
 			dbThread.setName(thread.getName());
 			return threadRepository.save(dbThread);
 		} else {
+			Optional optDBAuthor = authorRepository.findById(thread.getAuthor().getId());
+			if (!optDBAuthor.isPresent()) {
+				authorRepository.save(thread.getAuthor());
+			}
 			return threadRepository.save(thread);
 		}
 	}
