@@ -19,7 +19,7 @@
 		<jsoup.version>1.13.1</jsoup.version>
 		<jetbrains.annotations.version>20.1.0</jetbrains.annotations.version>
 		<node.version>v14.5.0</node.version>
-		<yarn.version>v1.22.5</yarn.version>
+		<yarn.version>v1.22.10</yarn.version>
 		<frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
 		<frontend-src-dir>${project.basedir}/src/main/frontend</frontend-src-dir>
 	</properties>
