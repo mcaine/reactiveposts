@@ -56,11 +56,11 @@ class ReactivePostsApplicationTests  {
 		forumsService.subscribeToForum(cspam);
 
 		StepVerifier.create(forumsService.updateThreads())
-			.expectNextCount(1)
+			.expectNextCount(2)  // update gets 2 pages by default
 			.verifyComplete();
 
 		List<Thread> threads = threadRepository.findAll();
-		assertTrue(threads.size() == 40);
+		assertTrue(threads.size() == 80);
 
 		final Thread thread = threads.get(0);
 		log.info("found a thread " + thread);

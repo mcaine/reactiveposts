@@ -19,7 +19,8 @@ public class GetTestData implements Directories {
 
 		ThreadPageSpec[] threadPageSpecs = {
 			ThreadPageSpec.of(Thread.withId(3942499), 1),
-			ThreadPageSpec.of(Thread.withId(3913301), 10) // what if a Big Mac
+			ThreadPageSpec.of(Thread.withId(3913301), 10), // what if a Big Mac
+			ThreadPageSpec.of(Thread.withId(3946225), 3)
 		};
 
         Arrays.stream(threadPageSpecs).forEach(ThreadPageSpec::cacheThreadPage);

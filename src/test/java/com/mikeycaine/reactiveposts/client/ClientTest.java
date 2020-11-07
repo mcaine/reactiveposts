@@ -2,13 +2,26 @@ package com.mikeycaine.reactiveposts.client;
 
 import com.mikeycaine.reactiveposts.client.content.ThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
+import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
+import com.mikeycaine.reactiveposts.service.ImageFindingService;
 import com.mikeycaine.reactiveposts.testdata.IndexPageSpec;
 import com.mikeycaine.reactiveposts.testdata.ThreadPageSpec;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class ClientTest extends ClientTestUtils {
@@ -96,5 +109,36 @@ public class ClientTest extends ClientTestUtils {
 			.expectNextMatches(post -> post.getAuthor().getName().equals("oh but seriously I") && post.getId() == 507178153)
 			.expectNextCount(39L)
 			.verifyComplete();
+	}
+
+	@Test
+	void testFindImageUrls() throws MalformedURLException {
+		AtomicInteger count = new AtomicInteger(0);
+
+		List<Post> posts = postsFrom(3913301, 10);
+		posts.forEach(post -> {
+			int idx = count.incrementAndGet();
+			List<URL> images = new ImageFindingService().findImagesInPost(post);
+			if (images.size() > 0) {
+				log.info("Images found in post {}", idx);
+				images.forEach(image -> log.info(" - " + image.toString()));
+			}
+		});
+
+		Set<URL> images = posts.stream().flatMap(post -> new ImageFindingService().findImagesInPost(post).stream()).collect(Collectors.toSet());
+		assertTrue(images.contains(new URL("https://i.imgur.com/TbnGK4l.gif")));
+		assertTrue(images.contains(new URL("https://i.imgur.com/kXW4Wqk.jpg")));
+		assertTrue(images.contains(new URL("https://fi.somethingawful.com/images/smilies/sss.gif")));
+	}
+
+	@Test
+	void testFindTweets() throws MalformedURLException {
+		List<Post> posts = postsFrom(3946225, 3);
+
+		Post post = posts.get(36);
+		List<URL> tweets = new ImageFindingService().findTweetsInPost(post);
+		log.info(tweets.get(0).toString());
+		assertTrue(tweets.contains(new URL("https://twitter.com/proudsocialist/status/1322749610503229440?s=21")));
+
 	}
 }

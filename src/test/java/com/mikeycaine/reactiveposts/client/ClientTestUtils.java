@@ -1,14 +1,19 @@
 package com.mikeycaine.reactiveposts.client;
 
+import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
 import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
+import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
+import com.mikeycaine.reactiveposts.model.Thread;
+import com.mikeycaine.reactiveposts.testdata.ThreadPageSpec;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -68,5 +73,10 @@ public class ClientTestUtils {
 		} catch (InterruptedException e) {
 			fail();
 		}
+	}
+
+	public List<Post> postsFrom(int threadId, int pageNum) {
+		PostsPage postsPage = ThreadPageSpec.of(Thread.withId(threadId), pageNum).cachedContentMono().map(PostsPageContent::parsed).block();
+		return postsPage.getPosts();
 	}
 }
