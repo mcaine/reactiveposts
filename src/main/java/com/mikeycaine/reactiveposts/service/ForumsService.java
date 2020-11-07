@@ -12,6 +12,7 @@ import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
+import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class ForumsService {
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
 	private final AuthorRepository authorRepository;
+	private final UpdatesConfig config;
 	private final Client client;
 
 	final int MAX_CONCURRENCY = 1;
@@ -56,7 +58,7 @@ public class ForumsService {
 		log.info("Updating threads for {} subscribed forum{}", subscribedForums.size(), (subscribedForums.size() == 1 ? "" : "s"));
 
 		return Flux.fromIterable(subscribedForums)
-			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, 1), MAX_CONCURRENCY)
+			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, config.getIndexDepth()), MAX_CONCURRENCY)
 			.doOnNext(threadsIndex -> {
 				threadsIndex.getThreads().forEach(this::mergeThreadInfo);
 			});

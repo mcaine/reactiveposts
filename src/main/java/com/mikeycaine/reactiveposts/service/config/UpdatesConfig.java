@@ -14,4 +14,7 @@ public class UpdatesConfig {
 
 	@Getter @Setter
 	private Duration postsUpdateInterval = Duration.ofMinutes(5);
+
+	@Getter @Setter
+	private int indexDepth = 1;
 }
