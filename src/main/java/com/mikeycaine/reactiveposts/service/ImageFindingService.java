@@ -3,13 +3,11 @@ package com.mikeycaine.reactiveposts.service;
 import com.mikeycaine.reactiveposts.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,10 +31,10 @@ public class ImageFindingService {
 
 	public List<URL> findLinksInPost(Post post) {
 		return Jsoup.parse(post.getHtml()).getElementsByTag("a").stream()
-			.map(imgElement -> imgElement.attr("href"))
-			.flatMap(imgsrc -> {
+			.map(linkElement -> linkElement.attr("href"))
+			.flatMap(linkHref -> {
 				try {
-					return Stream.of(new URL(imgsrc));
+					return Stream.of(new URL(linkHref));
 				} catch (MalformedURLException e) {
 					return Stream.empty();
 				}
