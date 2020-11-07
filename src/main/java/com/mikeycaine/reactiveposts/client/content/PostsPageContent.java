@@ -171,8 +171,6 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 		post.setHtml(postBodyHtml);
 		post.setPageNum(pageNum);
 
-		//author.getPosts().add(post);
-
 		return Stream.of(post);
 	}
 
