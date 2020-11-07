@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 public class ImageFindingService {
 
 	public List<URL> findImagesInPost(Post post) {
-
 		return Jsoup.parse(post.getHtml()).getElementsByTag("img").stream()
 			.map(imgElement -> imgElement.attr("src"))
 			.flatMap(imgsrc -> {
