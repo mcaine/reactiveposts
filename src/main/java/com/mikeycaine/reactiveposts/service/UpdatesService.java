@@ -20,42 +20,61 @@ public class UpdatesService {
 	private final UpdatesConfig config;
 
 	private final int MAX_CONCURRENCY = 1;
+	private final int MAX_RETRIES = 10;
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
 	public void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
-		threadUpdates = Optional.of(Flux.interval(config.getThreadsUpdateInterval()).flatMapSequential(l -> Flux.defer(() -> {
-			log.info("Updating threads [{}]", l);
-			return forumsService.updateThreads();
-		}), MAX_CONCURRENCY).subscribe(
-			thread -> {},
-			t -> log.error("FAILED when updating forum threads: " + t.getMessage())
-		));
+
+		Disposable disposable = Flux
+			.interval(Duration.ofSeconds(5), config.getThreadsUpdateInterval())
+			.flatMapSequential(l -> {
+				log.info("Updating threads [{}]", l);
+				return forumsService.updateThreads();
+			}, MAX_CONCURRENCY)
+			.retry(MAX_RETRIES)
+			.subscribe(
+				thread -> {},
+				t -> log.error("FAILED when updating forum threads: " + t.getMessage())
+			);
+
+		threadUpdates = Optional.of(disposable);
 	}
 
 	public void startPostUpdates() {
 		postUpdates.ifPresent(Disposable::dispose);
-		postUpdates = Optional.of(Flux.interval(config.getPostsUpdateInterval()).flatMapSequential(l -> Flux.defer(() -> {
-			log.info("Updating posts [{}]", l);
-			return forumsService.updatePosts();
-		}), MAX_CONCURRENCY).subscribe(
-			post -> {},
-			t -> log.error("FAILED when updating thread posts: " + t.getMessage())
-		));
+
+		Disposable disposable = Flux
+			.interval(Duration.ofSeconds(5), config.getPostsUpdateInterval())
+			.flatMapSequential(l -> {
+				log.info("Updating posts [{}]", l);
+				return forumsService.updatePosts();
+			}, MAX_CONCURRENCY)
+			.retry(MAX_RETRIES)
+			.subscribe(
+				post -> {},
+				t -> log.error("FAILED when updating thread posts: " + t.getMessage())
+			);
+
+		postUpdates = Optional.of(disposable);
 	}
 
-	public void start() {
+	public void startUpdating() {
 		startThreadUpdates();
 		startPostUpdates();
+	}
+
+	public void stopUpdating() {
+		threadUpdates.ifPresent(Disposable::dispose);
+		postUpdates.ifPresent(Disposable::dispose);
 	}
 
 	public void updateForums() {
 		forumsService.updateForums().subscribe(
 			mainForumIndex -> log.info("There are {} main forums", mainForumIndex.getForums().stream().filter(Forum::isTopLevelForum).count()),
-			t -> log.error("FAILED when getting list of forums: " + t.getMessage()),
-			() -> forumsService.updateThreads().subscribe()
+			t -> log.error("FAILED when getting list of forums: " + t.getMessage())
 		);
 	}
 }
