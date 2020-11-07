@@ -9,12 +9,17 @@ import org.springframework.stereotype.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 @Slf4j
 public class ImageFindingService {
+
+	Pattern postIdPattern = Pattern.compile("(.*)postid=(\\d+)");
 
 	public List<URL> findImagesInPost(Post post) {
 		return Jsoup.parse(post.getHtml()).getElementsByTag("img").stream()
@@ -45,6 +50,16 @@ public class ImageFindingService {
 	public List<URL> findTweetsInPost(Post post) {
 		return findLinksInPost(post).stream()
 			.filter(url -> url.getHost().equals("twitter.com"))
+			.collect(Collectors.toUnmodifiableList());
+	}
+
+	public List<Integer> findQuotesInPost(Post post) {
+		return Jsoup.parse(post.getHtml()).getElementsByClass("quote_link").stream()
+			.map(linkElement -> linkElement.attr("href"))
+			.flatMap(href -> {
+				Matcher matcher = postIdPattern.matcher(href);
+				return matcher.find() ? Stream.of(Integer.parseInt(matcher.group(2))) : Stream.empty();
+			})
 			.collect(Collectors.toUnmodifiableList());
 	}
 }

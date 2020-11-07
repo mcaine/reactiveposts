@@ -141,4 +141,13 @@ public class ClientTest extends ClientTestUtils {
 		assertTrue(tweets.contains(new URL("https://twitter.com/proudsocialist/status/1322749610503229440?s=21")));
 
 	}
+
+	@Test
+	void testFindQuotes() throws MalformedURLException {
+		List<Post> posts = postsFrom(3913301, 10);
+
+		Post post = posts.get(1);
+		List<Integer> quotedPostIds = new ImageFindingService().findQuotesInPost(post);
+		assertTrue(quotedPostIds.size() == 1 && quotedPostIds.get(0) == 507178153);
+	}
 }
