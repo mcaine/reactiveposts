@@ -11,8 +11,8 @@ spec:
   claimRef:
     namespace: default
     name: postgis-pv-claim
-#  gcePersistentDisk:
-#    fsType: ext4
-#    readOnly: false
-#    pdName:
+  gcePersistentDisk:
+    fsType: ext4
+    readOnly: false
+    pdName: gke-november3-2c2d634a-pvc-a501839c-642e-466f-a14d-ebb0ee174daf
   persistentVolumeReclaimPolicy: Retain
