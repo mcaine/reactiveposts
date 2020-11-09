@@ -29,12 +29,12 @@ public class ForumIndexTestPage extends TestPage<ThreadsIndexContent> {
 	}
 
 	@Override
-	public URL url() throws MalformedURLException {
+	protected URL url() throws MalformedURLException {
 		return new URL("https://forums.somethingawful.com" + Urls.forumThreadsIndexAddress(forum.getId(), pageNum));
 	}
 
 	@Override
-	public Path targetPath() {
+	protected Path targetPath() {
 		return Path.of(
 			indexesDir,
 			String.format("forumIndex_%d_page%d.html", forum.getId(), pageNum)
