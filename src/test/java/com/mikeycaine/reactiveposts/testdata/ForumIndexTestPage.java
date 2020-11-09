@@ -21,7 +21,6 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 @Slf4j
 public class ForumIndexTestPage extends TestPage<ThreadsIndexContent> {
-	//final int forumId;
 	final Forum forum;
 	final int pageNum;
 
