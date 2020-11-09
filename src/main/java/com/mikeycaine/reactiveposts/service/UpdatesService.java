@@ -52,14 +52,20 @@ public class UpdatesService implements InitializingBean {
 
 	public void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
-		threadUpdates = Optional.of(runUpdates(() -> forumsService.updateThreads(), "threads",
-							threadsUpdateInitialDelay, threadsUpdateInterval, threadsUpdateMaxRetries));
+		threadUpdates = Optional.of(
+			runUpdates(
+				() -> forumsService.updateThreads(),"threads",
+				threadsUpdateInitialDelay, threadsUpdateInterval, threadsUpdateMaxRetries)
+		);
 	}
 
 	public void startPostUpdates() {
 		postUpdates.ifPresent(Disposable::dispose);
-		postUpdates = Optional.of(runUpdates(() -> forumsService.updatePosts(), "posts",
-						postsUpdateInitialDelay, postsUpdateInterval, postsUpdateMaxRetries));
+		postUpdates = Optional.of(
+			runUpdates(
+				() -> forumsService.updatePosts(),"posts",
+				postsUpdateInitialDelay, postsUpdateInterval, postsUpdateMaxRetries)
+		);
 	}
 
 	public void startUpdating() {
