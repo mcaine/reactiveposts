@@ -4,61 +4,62 @@ import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UpdatesService {
+public class UpdatesService implements InitializingBean {
 
 	private final ForumsService forumsService;
 	private final UpdatesConfig config;
 
-	private final int MAX_CONCURRENCY = 1;
-	private final int MAX_RETRIES = 10;
+	//private final int MAX_CONCURRENCY = 1;
+	//private final int MAX_RETRIES = 10;
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
+	private Duration threadsUpdateInitialDelay;
+	private Duration threadsUpdateInterval;
+	private int threadsUpdateMaxRetries;
+
+	private Duration postsUpdateInitialDelay;
+	private Duration postsUpdateInterval;
+	private int postsUpdateMaxRetries;
+
+
+	@Override
+	public void afterPropertiesSet() {
+		threadsUpdateInitialDelay = config.getThreadsUpdateInitialDelay();
+		threadsUpdateInterval = config.getThreadsUpdateInterval();
+		threadsUpdateMaxRetries = config.getThreadsUpdateMaxRetries();
+
+		postsUpdateInitialDelay = config.getPostsUpdateInitialDelay();
+		postsUpdateInterval = config.getPostsUpdateInterval();
+		postsUpdateMaxRetries = config.getPostsUpdateMaxRetries();
+	}
+
+
 	public void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
-
-		Disposable disposable = Flux
-			.interval(Duration.ofSeconds(5), config.getThreadsUpdateInterval())
-			.flatMapSequential(l -> {
-				log.info("Updating threads [{}]", l);
-				return forumsService.updateThreads();
-			}, MAX_CONCURRENCY)
-			.retry(MAX_RETRIES)
-			.subscribe(
-				thread -> {},
-				t -> log.error("FAILED when updating forum threads: " + t.getMessage())
-			);
-
-		threadUpdates = Optional.of(disposable);
+		threadUpdates = Optional.of(runUpdates(() -> forumsService.updateThreads(), "threads",
+							threadsUpdateInitialDelay, threadsUpdateInterval, threadsUpdateMaxRetries));
 	}
 
 	public void startPostUpdates() {
 		postUpdates.ifPresent(Disposable::dispose);
-
-		Disposable disposable = Flux
-			.interval(Duration.ofSeconds(5), config.getPostsUpdateInterval())
-			.flatMapSequential(l -> {
-				log.info("Updating posts [{}]", l);
-				return forumsService.updatePosts();
-			}, MAX_CONCURRENCY)
-			.retry(MAX_RETRIES)
-			.subscribe(
-				post -> {},
-				t -> log.error("FAILED when updating thread posts: " + t.getMessage())
-			);
-
-		postUpdates = Optional.of(disposable);
+		postUpdates = Optional.of(runUpdates(() -> forumsService.updatePosts(), "posts",
+						postsUpdateInitialDelay, postsUpdateInterval, postsUpdateMaxRetries));
 	}
 
 	public void startUpdating() {
@@ -76,5 +77,19 @@ public class UpdatesService {
 			mainForumIndex -> log.info("There are {} main forums", mainForumIndex.getForums().stream().filter(Forum::isTopLevelForum).count()),
 			t -> log.error("FAILED when getting list of forums: " + t.getMessage())
 		);
+	}
+
+	Disposable runUpdates (Supplier<Flux<?>> supplier, String what, Duration initialDelay, Duration interval, int maxRetries) {
+		return Flux
+			.interval(initialDelay, postsUpdateInterval)
+			.flatMapSequential(l -> {
+				log.info("Updating {} [{}]", what,  l);
+				return supplier.get();
+			})
+			.retry(maxRetries)
+			.subscribe(
+				post -> {},
+				t -> log.error("FAILED when updating {}: {} ", what, t.getMessage())
+			);
 	}
 }

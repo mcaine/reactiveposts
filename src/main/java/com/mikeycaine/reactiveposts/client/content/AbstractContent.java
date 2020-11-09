@@ -1,11 +1,9 @@
 package com.mikeycaine.reactiveposts.client.content;
 
-import java.util.Optional;
-
-abstract class AbstractContent<T> implements Content<T> {
+public abstract class AbstractContent<T> implements Content<T> {
 	final protected String content;
 
-	AbstractContent(String content) {
+	public AbstractContent(String content) {
 		this.content = content;
 	}
 
