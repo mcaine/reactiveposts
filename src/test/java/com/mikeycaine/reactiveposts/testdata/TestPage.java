@@ -19,8 +19,8 @@ import java.util.stream.Stream;
 
 @Slf4j
 abstract class TestPage<T> implements TestDirectories {
-	abstract public URL url() throws MalformedURLException;
-	abstract public Path targetPath();
+	abstract protected URL url() throws MalformedURLException;
+	abstract protected Path targetPath();
 	abstract protected T result(String fileContent);
 
 	public void cachePage() {
