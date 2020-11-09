@@ -12,7 +12,6 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Service
@@ -21,13 +20,11 @@ import java.util.function.Supplier;
 public class UpdatesService implements InitializingBean {
 
 	private final ForumsService forumsService;
-	private final UpdatesConfig config;
-
-	//private final int MAX_CONCURRENCY = 1;
-	//private final int MAX_RETRIES = 10;
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
+
+	private final UpdatesConfig config;
 
 	private Duration threadsUpdateInitialDelay;
 	private Duration threadsUpdateInterval;
@@ -36,7 +33,6 @@ public class UpdatesService implements InitializingBean {
 	private Duration postsUpdateInitialDelay;
 	private Duration postsUpdateInterval;
 	private int postsUpdateMaxRetries;
-
 
 	@Override
 	public void afterPropertiesSet() {
@@ -49,12 +45,11 @@ public class UpdatesService implements InitializingBean {
 		postsUpdateMaxRetries = config.getPostsUpdateMaxRetries();
 	}
 
-
 	public void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
 		threadUpdates = Optional.of(
 			runUpdates(
-				() -> forumsService.updateThreads(),"threads",
+				forumsService::updateThreads,"threads",
 				threadsUpdateInitialDelay, threadsUpdateInterval, threadsUpdateMaxRetries)
 		);
 	}
@@ -63,7 +58,7 @@ public class UpdatesService implements InitializingBean {
 		postUpdates.ifPresent(Disposable::dispose);
 		postUpdates = Optional.of(
 			runUpdates(
-				() -> forumsService.updatePosts(),"posts",
+				forumsService::updatePosts,"posts",
 				postsUpdateInitialDelay, postsUpdateInterval, postsUpdateMaxRetries)
 		);
 	}
@@ -88,6 +83,7 @@ public class UpdatesService implements InitializingBean {
 	Disposable runUpdates (Supplier<Flux<?>> supplier, String what, Duration initialDelay, Duration interval, int maxRetries) {
 		return Flux
 			.interval(initialDelay, interval)
+			.publishOn(Schedulers.elastic())
 			.flatMapSequential(l -> {
 				log.info("Updating {} [{}]", what,  l);
 				return supplier.get();
