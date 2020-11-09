@@ -43,6 +43,7 @@ class ThreadTestPage extends TestPage<PostsPageContent> {
 		);
 	}
 
+	@Override
 	protected PostsPageContent result(String fileContent) {
 		return new PostsPageContent(fileContent, thread, pageNum);
 	}

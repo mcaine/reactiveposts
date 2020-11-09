@@ -42,6 +42,7 @@ public class ForumIndexTestPage extends TestPage<ThreadsIndexContent> {
 		);
 	}
 
+	@Override
 	protected ThreadsIndexContent result(String s) {
 		return new ThreadsIndexContent(s, forum, pageNum);
 	}
