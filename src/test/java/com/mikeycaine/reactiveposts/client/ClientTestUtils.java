@@ -6,14 +6,13 @@ import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
-import com.mikeycaine.reactiveposts.testdata.ThreadPageSpec;
+import com.mikeycaine.reactiveposts.testdata.ThreadTestPage;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -76,7 +75,7 @@ public class ClientTestUtils {
 	}
 
 	public List<Post> postsFrom(int threadId, int pageNum) {
-		PostsPage postsPage = ThreadPageSpec.of(Thread.withId(threadId), pageNum).cachedContentMono().map(PostsPageContent::parsed).block();
+		PostsPage postsPage = ThreadTestPage.of(Thread.withId(threadId), pageNum).cachedContentMono().map(PostsPageContent::parsed).block();
 		return postsPage.getPosts();
 	}
 }

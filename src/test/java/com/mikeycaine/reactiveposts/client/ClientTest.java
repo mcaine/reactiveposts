@@ -2,13 +2,12 @@ package com.mikeycaine.reactiveposts.client;
 
 import com.mikeycaine.reactiveposts.client.content.ThreadsIndexContent;
 import com.mikeycaine.reactiveposts.client.content.PostsPageContent;
-import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.service.ImageFindingService;
-import com.mikeycaine.reactiveposts.testdata.IndexPageSpec;
-import com.mikeycaine.reactiveposts.testdata.ThreadPageSpec;
+import com.mikeycaine.reactiveposts.testdata.ForumIndexTestPage;
+import com.mikeycaine.reactiveposts.testdata.ThreadTestPage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,9 +58,9 @@ public class ClientTest extends ClientTestUtils {
 	public void testParseThreadsIndex() {
 		Forum goonsWithSpoons = new Forum(161, "Goons with spoons");
 		StepVerifier.create(
-			IndexPageSpec.of(goonsWithSpoons, 4).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
+			ForumIndexTestPage.of(goonsWithSpoons, 4).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
 		)
-			.expectNextMatches(thread -> thread.getName().equals("ICSA 69: Breakfast Voting Thread"))
+			.expectNextMatches(thread -> thread.getName().equals("D&D Winter Blood and Charity Drive"))
 			.expectNextCount(29L) // this forum has 30 posts per index page for some reason???
 			.verifyComplete();
 	}
@@ -71,7 +69,7 @@ public class ClientTest extends ClientTestUtils {
 	public void testParseThreadsIndex2() {
 		Forum iyg = new Forum(192, "Inspect your gadgets");
 		StepVerifier.create(
-			IndexPageSpec.of(iyg, 5).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
+			ForumIndexTestPage.of(iyg, 5).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
 		)
 			.expectNextMatches(thread -> thread.getName().equals("Like-new Huawei Watch steel link, Android/iOS watch, near-perfect condition"))
 			.expectNextCount(29L)  // this forum has 30 posts per index page for some reason???
@@ -82,9 +80,9 @@ public class ClientTest extends ClientTestUtils {
 	public void testParseThreadsIndex3() {
 		Forum iyg = new Forum(273, "GBS");
 		StepVerifier.create(
-			IndexPageSpec.of(iyg, 6).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
+			ForumIndexTestPage.of(iyg, 6).cachedContentMono().flatMapMany(ThreadsIndexContent::parseToThreadsFlux)
 		)
-			.expectNextMatches(thread -> thread.getName().equals("Other times I don't make a thread"))
+			.expectNextMatches(thread -> thread.getName().equals("ITT we're large business owners"))
 			.expectNextCount(39L)
 			.verifyComplete();
 	}
@@ -93,7 +91,7 @@ public class ClientTest extends ClientTestUtils {
 	public void testParsePostsPage() {
 		Thread trumo = Thread.withId(3942499);
 		StepVerifier.create(
-			ThreadPageSpec.of(trumo, 1).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
+			ThreadTestPage.of(trumo, 1).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
 		)
 			.expectNextMatches(post -> post.getAuthor().getName().equals("Korean Boomhauer") && post.getId() == 508526226)
 			.expectNextCount(39L)
@@ -104,7 +102,7 @@ public class ClientTest extends ClientTestUtils {
 	public void testParsePostsPage2() {
 		Thread thread = Thread.withId(3913301);
 		StepVerifier.create(
-			ThreadPageSpec.of(thread, 10).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
+			ThreadTestPage.of(thread, 10).cachedContentMono().flatMapMany(PostsPageContent::parseToPostsFlux)
 		)
 			.expectNextMatches(post -> post.getAuthor().getName().equals("oh but seriously I") && post.getId() == 507178153)
 			.expectNextCount(39L)

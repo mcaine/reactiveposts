@@ -5,9 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-interface Directories {
+public interface TestDirectories {
 	String threadsDir = "src/test/resources/testpages/threads";
 	String indexesDir = "src/test/resources/testpages/indexes";
+
 	String [] allDirectories = {threadsDir, indexesDir};
 
 	static void checkDirsExist() {
