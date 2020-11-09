@@ -81,7 +81,7 @@ public class UpdatesService implements InitializingBean {
 
 	Disposable runUpdates (Supplier<Flux<?>> supplier, String what, Duration initialDelay, Duration interval, int maxRetries) {
 		return Flux
-			.interval(initialDelay, postsUpdateInterval)
+			.interval(initialDelay, interval)
 			.flatMapSequential(l -> {
 				log.info("Updating {} [{}]", what,  l);
 				return supplier.get();
