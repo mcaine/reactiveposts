@@ -14,5 +14,5 @@ spec:
   gcePersistentDisk:
     fsType: ext4
     readOnly: false
-    pdName: gke-november3-2c2d634a-pvc-a501839c-642e-466f-a14d-ebb0ee174daf
+    pdName:
   persistentVolumeReclaimPolicy: Retain
