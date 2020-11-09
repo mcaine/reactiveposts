@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -52,15 +53,16 @@ public class Forum {
 	@OneToMany(
 		mappedBy = "forum",
 		cascade = CascadeType.ALL,
-		orphanRemoval = true,
-		fetch = FetchType.LAZY
+		orphanRemoval = true
 	)
+	@JsonIgnore
 	private Set<Thread> threads = new HashSet<>();
 
 	@Getter
 	@OneToMany(
 		cascade = CascadeType.ALL,
-		orphanRemoval = true
+		orphanRemoval = true,
+		fetch = FetchType.EAGER
 	)
 	private Set<Forum> subForums = new HashSet<>();
 

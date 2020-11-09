@@ -10,4 +10,7 @@ import java.util.List;
 public interface ForumRepository extends JpaRepository<Forum, Integer>  {
 	@Query("SELECT f FROM Forum f WHERE f.subscribed=true")
 	List<Forum> subscribedForums();
+
+	@Query("SELECT f FROM Forum f JOIN f.subForums WHERE f.topLevelForum=true")
+	List<Forum> topLevelForums();
 }
