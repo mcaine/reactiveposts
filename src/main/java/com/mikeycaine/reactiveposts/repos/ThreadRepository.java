@@ -1,6 +1,5 @@
 package com.mikeycaine.reactiveposts.repos;
 
-import com.mikeycaine.reactiveposts.model.Forum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.mikeycaine.reactiveposts.model.Thread;
 import org.springframework.data.jpa.repository.Query;

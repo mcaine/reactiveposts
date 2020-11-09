@@ -48,8 +48,12 @@ public class ImageFindingService {
 	}
 
 	public List<URL> findTweetsInPost(Post post) {
+		return findLinksWithHost(post, "twitter.com");
+	}
+
+	public List<URL> findLinksWithHost(Post post, String host) {
 		return findLinksInPost(post).stream()
-			.filter(url -> url.getHost().equals("twitter.com"))
+			.filter(url -> url.getHost().equals(host))
 			.collect(Collectors.toUnmodifiableList());
 	}
 
