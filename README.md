@@ -1,2 +1,3 @@
 # reactiveposts
-Reactive posts
+
+Caches forums posts in a postgres database
