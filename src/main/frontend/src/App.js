@@ -10,18 +10,13 @@ function App() {
         <Router>
             <div>
                 <Switch>
-                    <Route path="/forums" component={ForumsPanel} />
+
                     <Route path="/forum/:forumId" component={ThreadsPanel} />
 
                     <Route path="/thread/:threadId/page/:pageId" component={ShowThread} />
 
-                    <Route path="/" >
-                        <Container>
-                            <div><a href = "/forums">FORUMS INDEX</a></div>
-                            <div><a href = "/forum/219">YOSPOS</a></div>
-                            <div><a href = "/forum/269">C-SPAM</a></div>
-                        </Container>
-                    </Route>
+                    <Route path="/" component={ForumsPanel} />
+
                 </Switch>
             </div>
         </Router>
