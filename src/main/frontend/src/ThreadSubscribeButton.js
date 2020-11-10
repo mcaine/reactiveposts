@@ -41,4 +41,3 @@ class ThreadSubscribeButton extends Component {
 }
 
 export default ThreadSubscribeButton;
-

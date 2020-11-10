@@ -13,14 +13,16 @@ class ThreadsPanel extends Component {
         super(props);
         this.state = {
             //forumId: props.forumId,
-            forumId: 269,
+            //forumId: 269,
             threads: []
-        }
+        };
     }
 
     componentDidMount() {
+        const forumId = this.props.match.params.forumId;
+
         axios
-            .get(`/api/forum/${this.state.forumId}/threads`)
+            .get(`/api/forum/${forumId}/threads`)
             .then(res => {
                 if (res.status === 200) {
                     let threads = [...res.data];

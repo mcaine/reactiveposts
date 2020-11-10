@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.webapi;
 
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.service.WebApiService;
 import lombok.RequiredArgsConstructor;
@@ -42,4 +43,10 @@ public class WebApiController {
 			.map(formData -> Boolean.valueOf(formData.getFirst("subscribe")))
 			.map(status -> webApiService.updateThreadSubscriptionStatus(threadId, status));
 	}
+
+	@GetMapping("/thread/{threadId}/page/{pageId}")
+	public List<Post> postsForThreadPage(@PathVariable int threadId, @PathVariable int pageId) {
+		return webApiService.postsForThreadPage(threadId, pageId);
+	}
+
 }

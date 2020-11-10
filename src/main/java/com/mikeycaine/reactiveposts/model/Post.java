@@ -1,6 +1,8 @@
 package com.mikeycaine.reactiveposts.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,6 +25,7 @@ public class Post {
 	@Getter @Setter
 	@ManyToOne
 	@JoinColumn(nullable = false)
+	@JsonIgnore
 	private Thread thread;
 
 	@Getter @Setter
@@ -36,12 +39,13 @@ public class Post {
 
 	@Getter @Setter
 	@Column
-	@JsonSerialize(using= LocalDateTimeSerializer.class)
+	@JsonSerialize(using=LocalDateTimeSerializer.class)
 	private LocalDateTime postDate;
 
 	@Getter @Setter
 	@Column
-	@JsonSerialize(using= LocalDateTimeSerializer.class)
+	@JsonSerialize(using=InstantSerializer.class)
+	@JsonIgnore
 	private Instant retrievedDate;
 
 	@Getter @Setter
