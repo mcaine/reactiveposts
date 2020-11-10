@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.service;
 
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
@@ -35,5 +36,11 @@ public class WebApiService {
 
 		// TODO handle the case where forum isnt found
 		return forum.get();
+	}
+
+	public List<Thread> threadsForForum(int forumId) {
+		return forumRepository.findById(forumId)
+				.map(forum -> threadRepository.threadsForForum(forum))
+				.get();
 	}
 }

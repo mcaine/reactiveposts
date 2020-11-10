@@ -1,6 +1,7 @@
 package com.mikeycaine.reactiveposts.webapi;
 
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.service.WebApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,5 +29,10 @@ public class WebApiController {
 		return exchange.getFormData()
 			.map(formData -> Boolean.valueOf(formData.getFirst("subscribe")))
 			.map(status -> webApiService.updateForumSubscriptionStatus(forumId, status));
+	}
+
+	@GetMapping("/forum/{forumId}/threads")
+	public List<Thread> threadsForForum(@PathVariable int forumId) {
+		return webApiService.threadsForForum(forumId);
 	}
 }
