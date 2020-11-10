@@ -65,7 +65,10 @@ public class ForumsService {
 	}
 
 	public Flux<PostsPage> updatePosts() {
-		return Flux.fromIterable(threadRepository.subscribedThreads())
+		List<Thread> subscribedThreads = threadRepository.subscribedThreads();
+		log.info("Updating posts for {} subscribed thread{}", subscribedThreads.size(), (subscribedThreads.size() == 1 ? "" : "s"));
+
+		return Flux.fromIterable(subscribedThreads)
 			.flatMapSequential(thread -> {
 				log.debug("We are subscribed to {}...", thread.toString());
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
