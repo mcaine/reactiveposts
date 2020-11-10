@@ -24,9 +24,9 @@ class ForumRow extends Component {
                     <td>{this.state.forum.id}</td>
                     <td>{this.state.forum.name}</td>
                     <td>{this.state.forum.subscribed ? "YES" : ""}</td>
-                    <td><ForumSubscribeButton subscribe={this.subscribe} forumId={this.props.forum.id} subscribed={this.props.forum.subscribed}/></td>
+                    <td><ForumSubscribeButton subscribe={this.subscribe} forum={this.state.forum}/></td>
                 </tr>
-                {this.props.forum.subForums.map((subForum, i) => <ForumRow key={this.props.key * 1000 + i} forum={subForum}/>)}
+                {this.props.forum.subForums.map((subForum, i) => <ForumRow key={this.props.keyVal * 1000 + i} forum={subForum}/>)}
             </>
         )
     }

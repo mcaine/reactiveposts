@@ -5,16 +5,15 @@ class ForumSubscribeButton extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            subscribed: this.props.subscribed,
-            forumId: this.props.forumId
+            forum: props.forum
         };
 
         this.handleClick = this.handleClick.bind(this);
     }
 
     handleClick() {
-        let forumId = this.props.forumId;
-        let newSubscriptionStatus = !this.state.subscribed;
+        let forumId = this.state.forum.id;
+        let newSubscriptionStatus = !this.state.forum.subscribed;
         console.log(`Setting new subscription status to ${newSubscriptionStatus} for forum ${forumId}`)
         axios
             .post(`/api/forum/${forumId}/subscribe`, `subscribe=${newSubscriptionStatus}`)
@@ -24,7 +23,7 @@ class ForumSubscribeButton extends Component {
                     let id = res.data.id;
                     console.log("Got id: " + id);
                     console.log("Got result: " + result);
-                    this.setState({subscribed : result});
+                    this.setState({forum : {...this.state.forum, subscribed: result}});
                     this.props.subscribe(result);
                 } else {
                     console.log("Got status " + res.status);

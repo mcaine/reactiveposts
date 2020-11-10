@@ -41,7 +41,7 @@ class ForumsPanel extends Component {
                 </tr>
                 </thead>
                 <tbody>
-                    {this.state.forums.map((forum, i) => <ForumRow key={i} forum={forum}/>)}
+                    {this.state.forums.map((forum, i) => <ForumRow keyVal={i} key={i} forum={forum}/>)}
                 </tbody>
             </Table>
             </Container>
