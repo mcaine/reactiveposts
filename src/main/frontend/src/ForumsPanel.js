@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Table, Container } from "react-bootstrap"
-import ForumRow from './ForumRow'
+import { Table, Container } from "react-bootstrap";
+import ForumRow from './ForumRow';
 
 import 'bootstrap/dist/css/bootstrap.css'
 import './App.css'
@@ -31,12 +31,13 @@ class ForumsPanel extends Component {
     render() {
         return (
             <Container>
-            <Table bordered size="sm">
+            <Table bordered>
                 <thead>
                 <tr>
-                    <th> Forum Id </th>
-                    <th> Name </th>
-                    <th> Caching </th>
+                    <th>Forum Id</th>
+                    <th>Name</th>
+                    <th>Caching</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
