@@ -3,20 +3,30 @@ package com.mikeycaine.reactiveposts.webapi;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.service.WebApiService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 public class WebApiController {
 	private final WebApiService webApiService;
 
 	@GetMapping("/forums")
 	public List<Forum> forums() {
 		return webApiService.topLevelForums();
+	}
+
+	@PostMapping("/forum/{forumId}/subscribe")
+	public Mono<Forum> subscribe(@PathVariable int forumId, ServerWebExchange exchange) {
+		return exchange.getFormData()
+			.map(formData -> Boolean.valueOf(formData.getFirst("subscribe")))
+			.map(status -> webApiService.updateForumSubscriptionStatus(forumId, status));
 	}
 }

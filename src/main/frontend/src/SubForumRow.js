@@ -9,7 +9,7 @@ class SubForumRow extends Component {
                 <td>{this.props.forum.id}</td>
                 <td>{this.props.forum.name}</td>
                 <td>{this.props.forum.subscribed ? "YES" : ""}</td>
-                <td><ForumSubscribeButton subscribed={this.props.forum.subscribed}/></td>
+                <td><ForumSubscribeButton forumId={this.props.forum.id} subscribed={this.props.forum.subscribed}/></td>
             </tr>
         )
     }
