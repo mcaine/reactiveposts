@@ -10,7 +10,6 @@ class ShowThread extends Component {
         this.state = {
             posts: []
         };
-
     }
 
     componentDidMount() {
@@ -34,7 +33,6 @@ class ShowThread extends Component {
 
     render() {
         return (
-
                 <Table bordered>
                     <thead>
                     <tr>
@@ -46,7 +44,6 @@ class ShowThread extends Component {
                     {this.state.posts.map((post, i) => <PostRow key={post.id} post={post}/>)}
                     </tbody>
                 </Table>
-
         );
     }
 }
