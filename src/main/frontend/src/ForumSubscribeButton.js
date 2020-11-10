@@ -20,10 +20,7 @@ class ForumSubscribeButton extends Component {
             .then(res => {
                 if (res.status === 200) {
                     let result = res.data.subscribed;
-                    let id = res.data.id;
-                    console.log("Got id: " + id);
-                    console.log("Got result: " + result);
-                    this.setState({forum : {...this.state.forum, subscribed: result}});
+                    this.setState({forum : {...this.state.forum, subscribed: result}}); // why do I need to do this?
                     this.props.subscribe(result);
                 } else {
                     console.log("Got status " + res.status);
