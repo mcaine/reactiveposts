@@ -1,7 +1,9 @@
 package com.mikeycaine.reactiveposts.repos;
 
+import com.mikeycaine.reactiveposts.model.Forum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.mikeycaine.reactiveposts.model.Thread;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -9,4 +11,11 @@ import java.util.List;
 public interface ThreadRepository extends JpaRepository<Thread, Integer>  {
 	@Query("SELECT t FROM Thread t WHERE t.subscribed=true")
 	List<Thread> subscribedThreads();
+
+	@Query("SELECT t FROM Thread t WHERE t.forum = ?1 ORDER BY t.subscribed DESC, t.id DESC")
+	List<Thread> threadsForForum(Forum forum);
+
+	@Query("UPDATE Thread t SET t.subscribed=?2 WHERE t.id=?1")
+	@Modifying
+	int updateThreadSubscriptionStatus(int threadId, boolean newStatus);
 }

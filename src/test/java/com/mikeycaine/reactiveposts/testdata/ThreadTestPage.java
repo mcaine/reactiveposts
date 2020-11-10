@@ -29,20 +29,21 @@ class ThreadTestPage extends TestPage<PostsPageContent> {
 	}
 
 	@Override
-	public URL url() throws MalformedURLException {
+	protected URL url() throws MalformedURLException {
 		return new URL(
 			String.format("https://forums.somethingawful.com/showthread.php?threadid=%d&perpage=40&pagenumber=%d",
 				thread.getId(), pageNum));
 	}
 
 	@Override
-	public Path targetPath() {
+	protected Path targetPath() {
 		return Path.of(
 			threadsDir,
 			String.format("thread%d_page%d.html", thread.getId(), pageNum)
 		);
 	}
 
+	@Override
 	protected PostsPageContent result(String fileContent) {
 		return new PostsPageContent(fileContent, thread, pageNum);
 	}

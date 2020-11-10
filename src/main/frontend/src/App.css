@@ -1,5 +1,15 @@
 .App {
-  text-align: center;
+  /*text-align: center;*/
+}
+
+.toplevelforum {
+  font-size: calc(4px + 2vmin);
+  color: darkred;
+}
+
+.subforum {
+  font-size: calc(3px + 2vmin);
+  color: #008b76;
 }
 
 .App-logo {

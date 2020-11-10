@@ -1,25 +1,26 @@
-import logo from './logo.svg';
 import './App.css';
+import ThreadsPanel from "./ThreadsPanel";
+import ForumsPanel from "./ForumsPanel";
+import ShowThread from "./ShowThread";
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import {Container} from "react-bootstrap";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <Router>
+            <div>
+                <Switch>
+
+                    <Route path="/forum/:forumId" component={ThreadsPanel} />
+
+                    <Route path="/thread/:threadId/page/:pageId" component={ShowThread} />
+
+                    <Route path="/" component={ForumsPanel} />
+
+                </Switch>
+            </div>
+        </Router>
+    );
 }
 
 export default App;
