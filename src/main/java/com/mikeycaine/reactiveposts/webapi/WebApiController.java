@@ -25,7 +25,7 @@ public class WebApiController {
 	}
 
 	@PostMapping("/forum/{forumId}/subscribe")
-	public Mono<Forum> subscribe(@PathVariable int forumId, ServerWebExchange exchange) {
+	public Mono<Forum> subscribeToForum(@PathVariable int forumId, ServerWebExchange exchange) {
 		return exchange.getFormData()
 			.map(formData -> Boolean.valueOf(formData.getFirst("subscribe")))
 			.map(status -> webApiService.updateForumSubscriptionStatus(forumId, status));
@@ -34,5 +34,12 @@ public class WebApiController {
 	@GetMapping("/forum/{forumId}/threads")
 	public List<Thread> threadsForForum(@PathVariable int forumId) {
 		return webApiService.threadsForForum(forumId);
+	}
+
+	@PostMapping("/thread/{threadId}/subscribe")
+	public Mono<Thread> subscribeToThread(@PathVariable int threadId, ServerWebExchange exchange) {
+		return exchange.getFormData()
+			.map(formData -> Boolean.valueOf(formData.getFirst("subscribe")))
+			.map(status -> webApiService.updateThreadSubscriptionStatus(threadId, status));
 	}
 }

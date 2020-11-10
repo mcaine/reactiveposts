@@ -1,10 +1,11 @@
 import './App.css';
-import ForumsPanel from './ForumsPanel'
+//import ForumsPanel from './ForumsPanel'
+import ThreadsPanel from "./ThreadsPanel";
 
 function App() {
   return (
     <div className="App">
-      <ForumsPanel/>
+      <ThreadsPanel/>
     </div>
   );
 }

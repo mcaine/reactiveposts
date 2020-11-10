@@ -28,6 +28,7 @@ public class WebApiService {
 	public List<Forum> topLevelForums() {
 		return forumRepository.topLevelForums();
 	}
+
 	public Forum updateForumSubscriptionStatus(int forumId, boolean newStatus) {
 		log.info("Updating forum subscription status forum={} newStatus={}", forumId, newStatus);
 		int result = forumRepository.updateForumSubscriptionStatus(forumId, newStatus);
@@ -42,5 +43,15 @@ public class WebApiService {
 		return forumRepository.findById(forumId)
 				.map(forum -> threadRepository.threadsForForum(forum))
 				.get();
+	}
+
+	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
+		log.info("Updating thread subscription status forum={} newStatus={}", threadId, newStatus);
+		int result = threadRepository.updateThreadSubscriptionStatus(threadId, newStatus);
+		log.info("Got result {}", result);
+		Optional<Thread> thread = threadRepository.findById(threadId);
+
+		// TODO handle the case where thread isnt found
+		return thread.get();
 	}
 }
