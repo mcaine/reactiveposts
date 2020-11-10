@@ -32,16 +32,12 @@ class ForumSubscribeButton extends Component {
             .catch(function(error) {
                 console.log(error)
             });
-
-        // this.setState(state => ({
-        //     subscribed: !state.subscribed
-        // }));
     }
 
     render() {
         return (
             <button onClick={this.handleClick}>
-                {this.state.subscribed ? 'UNSUBSCRIBE' : 'SUBSCRIBE'}
+                {this.state.forum.subscribed ? 'UNSUBSCRIBE' : 'SUBSCRIBE'}
             </button>
         );
     }
