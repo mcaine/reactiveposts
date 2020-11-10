@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import axios from "axios";
-import {Container, Table} from "react-bootstrap";
-//import ThreadRow from "./ThreadRow";
+import {Table} from "react-bootstrap";
 import PostRow from "./PostRow";
 
 class ShowThread extends Component {

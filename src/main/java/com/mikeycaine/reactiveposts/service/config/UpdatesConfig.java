@@ -9,23 +9,31 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "reactiveposts")
 public class UpdatesConfig {
 
-	/** Updating the forum's index of threads for subscribed forums*/
+	/* Updating the forum's index of threads for subscribed forums*/
+
+	/** Initial delay before starting to get forum indexes */
 	@Getter @Setter
 	private Duration threadsUpdateInitialDelay = Duration.ofSeconds(5);
 
+	/** Interval between each read of the index of subscribed forums */
 	@Getter @Setter
 	private Duration threadsUpdateInterval = Duration.ofMinutes(15);
 
+	/** Number of times the thread updater can die before we give up */
 	@Getter @Setter
 	private int threadsUpdateMaxRetries = 5;
 
-	/** Updating posts for subscribed threads */
+	/* Updating posts for subscribed threads */
+
+	/** Initial delay before starting to get posts */
 	@Getter @Setter
 	private Duration postsUpdateInitialDelay = Duration.ofSeconds(5);
 
+	/** Interval between each check for the latest page for subscribed threads */
 	@Getter @Setter
 	private Duration postsUpdateInterval = Duration.ofMinutes(5);
 
+	/** Number of times the posts updater can die before we give up */
 	@Getter @Setter
 	private int postsUpdateMaxRetries = 5;
 

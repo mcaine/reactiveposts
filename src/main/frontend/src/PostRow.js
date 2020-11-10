@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import {ResponsiveEmbed, Image} from 'react-bootstrap';
-//import ThreadSubscribeButton from "./ThreadSubscribeButton";
 
 class PostRow extends Component {
     constructor(props) {
@@ -28,8 +26,6 @@ class PostRow extends Component {
             </>
         )
     }
-
-
 }
 
 export default PostRow;

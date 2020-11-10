@@ -20,7 +20,7 @@ class ForumRow extends Component {
         return (
             <>
                 <tr className={this.state.forum.topLevelForum ? "toplevelforum" : "subforum"}>
-                    <td><a href={`/index/${this.state.forum.id}`}>{this.state.forum.id}</a></td>
+                    <td><a href={`/forum/${this.state.forum.id}`}>{this.state.forum.id}</a></td>
                     <td>{this.state.forum.name}</td>
                     <td>{this.state.forum.subscribed ? "YES" : ""}</td>
                     <td><ForumSubscribeButton subscribe={this.subscribe} forum={this.state.forum}/></td>
