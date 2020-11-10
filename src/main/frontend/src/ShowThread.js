@@ -39,9 +39,8 @@ class ShowThread extends Component {
                 <Table bordered>
                     <thead>
                     <tr>
-                        <th>Author</th>
+                        <th width={300}>Author</th>
                         <th>Content</th>
-                        <th>Posted</th>
                     </tr>
                     </thead>
                     <tbody>

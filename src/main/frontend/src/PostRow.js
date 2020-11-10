@@ -15,9 +15,12 @@ class PostRow extends Component {
         return (
             <>
                 <tr>
-
-                    <td><div><h3>{post.author.name}</h3></div><div><img src={post.author.titleURL} alt="..." className="img-thumbnail"/></div></td>
-                    <td></td>
+                    <td>
+                        <div><h4>{post.author.name}</h4></div>
+                        <div><img src={post.author.titleURL} alt="..." className="img-thumbnail"/></div>
+                        <div><h4>{post.author.titleText}</h4></div>
+                        <div><h4>{post.postDate}</h4></div>
+                    </td>
                     <td><span dangerouslySetInnerHTML={{__html: post.html}} /></td>
                     <td></td>
                     <td></td>
