@@ -131,9 +131,17 @@
 				</configuration>
 				<executions>
 					<execution>
+						<id>build-image</id>
 						<phase>deploy</phase>
 						<goals>
 							<goal>build-image</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-info</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>build-info</goal>
 						</goals>
 					</execution>
 				</executions>
