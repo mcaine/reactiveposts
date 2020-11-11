@@ -24,6 +24,11 @@
 		<frontend-src-dir>${project.basedir}/src/main/frontend</frontend-src-dir>
 	</properties>
 
+	<scm>
+		<developerConnection>scm:git:https://github.com/mcaine/reactiveposts.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -106,9 +111,18 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>3.0.0-M1</version>
+			</plugin>
+
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<image>
+						<name>gcr.io/badinko/${project.artifactId}:${project.version}</name>
+					</image>
 					<excludes>
 						<exclude>
 							<groupId>org.springframework.boot</groupId>
@@ -184,6 +198,18 @@
 				</executions>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 	</build>
 
 </project>
