@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.mikeycaine</groupId>
 	<artifactId>reactiveposts</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>Reactive Posts</name>
 	<description>Getting posts using Mono/Flux</description>
 
@@ -129,6 +129,14 @@
 						</exclude>
 					</excludes>
 				</configuration>
+				<executions>
+					<execution>
+						<phase>deploy</phase>
+						<goals>
+							<goal>build-image</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
