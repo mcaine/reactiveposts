@@ -43,6 +43,17 @@ public class UpdatesService implements InitializingBean {
 		postsUpdateInitialDelay = config.getPostsUpdateInitialDelay();
 		postsUpdateInterval = config.getPostsUpdateInterval();
 		postsUpdateMaxRetries = config.getPostsUpdateMaxRetries();
+
+		log.info("*********************************************************");
+		log.info("UPDATES SERVICE CONFIG");
+		log.info("threadsUpdateInitialDelay = {}", threadsUpdateInitialDelay);
+		log.info("threadsUpdateInterval = {}", threadsUpdateInterval);
+		log.info("threadsUpdateMaxRetries = {}", threadsUpdateMaxRetries);
+		log.info("postsUpdateInitialDelay = {}", postsUpdateInitialDelay);
+		log.info("postsUpdateInterval = {}", postsUpdateInterval);
+		log.info("postsUpdateMaxRetries = {}", postsUpdateMaxRetries);
+		log.info("*********************************************************");
+
 	}
 
 	public void startThreadUpdates() {
