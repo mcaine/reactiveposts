@@ -9,10 +9,10 @@ class ForumRow extends Component {
         this.state = {
             forum : props.forum
         };
-        this.subscribe = this.subscribe.bind(this);
+        this.updateSubscriptionStatus = this.updateSubscriptionStatus.bind(this);
     }
 
-    subscribe(newSubscriptionState) {
+    updateSubscriptionStatus(newSubscriptionState) {
         this.setState({forum: {...this.state.forum, subscribed: newSubscriptionState}});
     }
 
@@ -23,7 +23,7 @@ class ForumRow extends Component {
                     <td><a href={`/forum/${this.state.forum.id}`}>{this.state.forum.id}</a></td>
                     <td>{this.state.forum.name}</td>
                     <td>{this.state.forum.subscribed ? "YES" : ""}</td>
-                    <td><ForumSubscribeButton subscribe={this.subscribe} forum={this.state.forum}/></td>
+                    <td><ForumSubscribeButton updateSubscriptionStatus={this.updateSubscriptionStatus} forum={this.state.forum}/></td>
                 </tr>
                 {this.state.forum.subForums.map((subForum, i) => <ForumRow key={subForum.id} forum={subForum}/>)}
             </>

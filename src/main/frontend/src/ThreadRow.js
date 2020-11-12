@@ -9,10 +9,10 @@ class ThreadRow extends Component {
         this.state = {
             thread : props.thread
         };
-        this.subscribe = this.subscribe.bind(this);
+        this.updateSubscriptionStatus = this.updateSubscriptionStatus.bind(this);
     }
 
-    subscribe(newSubscriptionState) {
+    updateSubscriptionStatus(newSubscriptionState) {
         this.setState({thread: {...this.state.thread, subscribed: newSubscriptionState}});
     }
 
@@ -25,7 +25,7 @@ class ThreadRow extends Component {
                     <td>{this.state.thread.maxPageNumber}</td>
                     <td>{this.state.thread.pagesGot}</td>
                     <td>{this.state.thread.subscribed ? "YES" : ""}</td>
-                    <td><ThreadSubscribeButton subscribe={this.subscribe} thread={this.state.thread}/></td>
+                    <td><ThreadSubscribeButton updateSubscriptionStatus={this.updateSubscriptionStatus} thread={this.state.thread}/></td>
                 </tr>
             </>
         )
