@@ -3,7 +3,6 @@ import ThreadsPanel from "./ThreadsPanel";
 import ForumsPanel from "./ForumsPanel";
 import ShowThread from "./ShowThread";
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
-import {Container} from "react-bootstrap";
 
 function App() {
     return (
