@@ -7,7 +7,7 @@ import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
-import com.mikeycaine.reactiveposts.webapi.ForumSubscriptionReply;
+import com.mikeycaine.reactiveposts.webapi.ForumNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,11 +33,14 @@ public class WebApiService {
 	public Forum updateForumSubscriptionStatus(int forumId, boolean newStatus) {
 		log.info("Updating forum subscription status forum={} newStatus={}", forumId, newStatus);
 		int result = forumRepository.updateForumSubscriptionStatus(forumId, newStatus);
-		log.info("Got result {}", result);
-		Optional<Forum> forum = forumRepository.findById(forumId);
+		if (result == 1) {
+			log.info("...updated forum subscription status for forum={} to new status {}", forumId, newStatus);
+		} else {
+			log.error("FAILED to update forum subscription status for forum={}", forumId);
+		}
 
-		// TODO handle the case where forum isnt found
-		return forum.get();
+		Optional<Forum> forum = forumRepository.findById(forumId);
+		return forum.orElseThrow(() -> new ForumNotFoundException(forumId));
 	}
 
 	public List<Thread> threadsForForum(int forumId) {
