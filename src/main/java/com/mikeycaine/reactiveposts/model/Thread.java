@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode
-public class    Thread {
+public class Thread {
 
 	@Id
 	@Getter
