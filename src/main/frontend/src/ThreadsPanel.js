@@ -12,8 +12,6 @@ class ThreadsPanel extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            //forumId: props.forumId,
-            //forumId: 269,
             threads: []
         };
     }
@@ -57,9 +55,6 @@ class ThreadsPanel extends Component {
             </Container>
         );
     }
-
-
-
 }
 
 export default ThreadsPanel;
