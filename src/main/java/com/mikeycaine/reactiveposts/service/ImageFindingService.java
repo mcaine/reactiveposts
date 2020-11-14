@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class ImageFindingService {
 
-	Pattern postIdPattern = Pattern.compile("(.*)postid=(\\d+)");
+	final Pattern postIdPattern = Pattern.compile("(.*)postid=(\\d+)");
 
 	public List<URL> findImagesInPost(Post post) {
 		return Jsoup.parse(post.getHtml()).getElementsByTag("img").stream()
