@@ -14,8 +14,4 @@ public interface ThreadRepository extends JpaRepository<Thread, Integer>  {
 
 	@Query("SELECT t FROM Thread t WHERE t.forum = ?1 ORDER BY t.subscribed DESC, t.id DESC")
 	List<Thread> threadsForForum(Forum forum);
-
-	@Query("UPDATE Thread t SET t.subscribed=?2 WHERE t.id=?1")
-	@Modifying
-	int updateThreadSubscriptionStatus(int threadId, boolean newStatus);
 }

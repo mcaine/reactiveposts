@@ -40,15 +40,14 @@ public class WebApiService {
 
 	public Forum updateForumSubscriptionStatus(int forumId, boolean newStatus) {
 		log.info("Updating forum subscription status forum={} newStatus={}", forumId, newStatus);
-		int result = forumRepository.updateForumSubscriptionStatus(forumId, newStatus);
-		Optional<Forum> optForum = forumRepository.findById(forumId);
-		if (result == 1) {
-			log.info("...updated forum subscription status for forum={} to new status {}", forumId, newStatus);
-		} else {
-			log.error("FAILED to update forum subscription status for forum={}", forumId);
-		}
 
-		return optForum.orElseThrow(() -> new ForumNotFoundException(forumId));
+		Forum forum = forumRepository.findById(forumId)
+			.orElseThrow(() -> new ForumNotFoundException(forumId));
+
+		forum.setSubscribed(newStatus);
+		log.info("...updated forum subscription status for forum {}, status now {}", forumId, forum.isSubscribed());
+
+		return forum;
 	}
 
 	public List<Thread> threadsForForum(int forumId) {
@@ -57,16 +56,20 @@ public class WebApiService {
 				.orElseThrow(() -> new ForumNotFoundException(forumId));
 	}
 
-	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
-		return forumsService.retrieveThreadsForForum(forum);
-	}
+//	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
+//		return forumsService.retrieveThreadsForForum(forum);
+//	}
 
 	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
-		log.info("Updating thread subscription status forum={} newStatus={}", threadId, newStatus);
-		int result = threadRepository.updateThreadSubscriptionStatus(threadId, newStatus);
-		log.info("Got result {}", result);
-		Optional<Thread> thread = threadRepository.findById(threadId);
-		return thread.orElseThrow(() -> new ThreadNotFoundException(threadId));
+		log.info("Updating thread subscription status thread={} newStatus={}", threadId, newStatus);
+
+		Thread thread = threadRepository.findById(threadId)
+			.orElseThrow(() -> new ThreadNotFoundException(threadId));
+
+		thread.setSubscribed(newStatus);
+		log.info("...updated thread subscription status for thread {}, status now {}", threadId, thread.isSubscribed());
+
+		return thread;
 	}
 
 	public List<Post> postsForThreadPage(int threadId, int pageId) {
