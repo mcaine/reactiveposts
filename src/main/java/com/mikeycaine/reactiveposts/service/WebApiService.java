@@ -44,9 +44,6 @@ public class WebApiService {
 		Optional<Forum> optForum = forumRepository.findById(forumId);
 		if (result == 1) {
 			log.info("...updated forum subscription status for forum={} to new status {}", forumId, newStatus);
-			if (newStatus) {
-				optForum.ifPresent(forum -> retrieveThreadsForForum(forum).subscribe(threadsIndex -> threadsIndex.getThreads().forEach(forumsService::mergeThreadInfo)));
-			}
 		} else {
 			log.error("FAILED to update forum subscription status for forum={}", forumId);
 		}
@@ -57,7 +54,7 @@ public class WebApiService {
 	public List<Thread> threadsForForum(int forumId) {
 		return forumRepository.findById(forumId)
 				.map(threadRepository::threadsForForum)
-				.orElseGet(() -> Collections.emptyList());
+				.orElseThrow(() -> new ForumNotFoundException(forumId));
 	}
 
 	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
