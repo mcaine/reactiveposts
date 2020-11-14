@@ -43,7 +43,7 @@ public class WebApiService {
 		if (result == 1) {
 			log.info("...updated forum subscription status for forum={} to new status {}", forumId, newStatus);
 			if (newStatus) {
-				optForum.ifPresent(forum -> retrieveThreadsForForum(forum).subscribe());
+				optForum.ifPresent(forum -> retrieveThreadsForForum(forum).subscribe(threadsIndex -> threadsIndex.getThreads().forEach(forumsService::mergeThreadInfo)));
 			}
 		} else {
 			log.error("FAILED to update forum subscription status for forum={}", forumId);

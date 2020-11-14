@@ -86,7 +86,7 @@ public class ForumsService {
 							}
 							List<Post> posts = postsPage.getPosts();
 							List<Author> postAuthors = posts.stream().map(Post::getAuthor).collect(Collectors.toList());
-							log.info("Persisting {} posts for page {} (of {}) for {}", posts.size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString());
+							log.info("Persisting {} posts for page {} (of {}) for {} in forum {}", posts.size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString(), thread.getForum().toString());
 							authorRepository.saveAll(postAuthors);
 							postRepository.saveAll(posts);
 							threadRepository.save(thread);
