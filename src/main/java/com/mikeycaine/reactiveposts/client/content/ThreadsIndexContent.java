@@ -95,7 +95,7 @@ public class ThreadsIndexContent extends AbstractContent<ThreadsIndex> {
 
 		Optional<Integer>optMaxPageNumber = pageNumbers.max(Integer::compareTo);
 
-		int maxPageNumber = optMaxPageNumber.orElseGet(() -> 1);
+		int maxPageNumber = optMaxPageNumber.orElse(1);
 
 		// Thread author
 		Optional<Element> authorElement = threadElement.getElementsByClass("author").stream()

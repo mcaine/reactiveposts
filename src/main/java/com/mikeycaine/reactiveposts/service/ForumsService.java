@@ -58,10 +58,12 @@ public class ForumsService {
 		log.info("Updating threads for {} subscribed forum{}", subscribedForums.size(), (subscribedForums.size() == 1 ? "" : "s"));
 
 		return Flux.fromIterable(subscribedForums)
-			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, config.getIndexDepth()), MAX_CONCURRENCY)
-			.doOnNext(threadsIndex -> {
-				threadsIndex.getThreads().forEach(this::mergeThreadInfo);
-			});
+			.flatMapSequential(this::retrieveThreadsForForum, MAX_CONCURRENCY)
+			.doOnNext(threadsIndex -> threadsIndex.getThreads().forEach(this::mergeThreadInfo));
+	}
+
+	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
+		return client.retrieveThreads(forum, 1, config.getIndexDepth());
 	}
 
 	public Flux<PostsPage> updatePosts() {
@@ -81,7 +83,7 @@ public class ForumsService {
 							}
 							List<Post> posts = postsPage.getPosts();
 							List<Author> postAuthors = posts.stream().map(Post::getAuthor).collect(Collectors.toList());
-							log.info("Persisting {} posts for page {} (of {}) for {}", posts.size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString());
+							log.info("Persisting {} posts for page {} (of {}) for {} in forum {}", posts.size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString(), thread.getForum().toString());
 							authorRepository.saveAll(postAuthors);
 							postRepository.saveAll(posts);
 							threadRepository.save(thread);
@@ -100,8 +102,8 @@ public class ForumsService {
 			dbThread.setName(thread.getName());
 			return threadRepository.save(dbThread);
 		} else {
-			Optional optDBAuthor = authorRepository.findById(thread.getAuthor().getId());
-			if (!optDBAuthor.isPresent()) {
+			Optional<Author> optDBAuthor = authorRepository.findById(thread.getAuthor().getId());
+			if (optDBAuthor.isEmpty()) {
 				authorRepository.save(thread.getAuthor());
 			}
 			return threadRepository.save(thread);
