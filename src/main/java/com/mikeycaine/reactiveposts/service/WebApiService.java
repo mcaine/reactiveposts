@@ -50,16 +50,6 @@ public class WebApiService {
 		return forum;
 	}
 
-	public List<Thread> threadsForForum(int forumId) {
-		return forumRepository.findById(forumId)
-				.map(threadRepository::threadsForForum)
-				.orElseThrow(() -> new ForumNotFoundException(forumId));
-	}
-
-//	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
-//		return forumsService.retrieveThreadsForForum(forum);
-//	}
-
 	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
 		log.info("Updating thread subscription status thread={} newStatus={}", threadId, newStatus);
 
@@ -70,6 +60,12 @@ public class WebApiService {
 		log.info("...updated thread subscription status for thread {}, status now {}", threadId, thread.isSubscribed());
 
 		return thread;
+	}
+
+	public List<Thread> threadsForForum(int forumId) {
+		return forumRepository.findById(forumId)
+			.map(threadRepository::threadsForForum)
+			.orElseThrow(() -> new ForumNotFoundException(forumId));
 	}
 
 	public List<Post> postsForThreadPage(int threadId, int pageId) {
