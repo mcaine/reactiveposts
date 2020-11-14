@@ -63,8 +63,13 @@ class ShowThread extends Component {
         return (
             <div>
                 {controls}
-
                  <Table bordered>
+                     <thead>
+                     <tr>
+                         <th width={300}>Author</th>
+                         <th>Content</th>
+                     </tr>
+                     </thead>
                     <tbody>
                     {this.state.posts.map((post, i) => <PostRow key={post.id} post={post}/>)}
                     </tbody>
