@@ -75,7 +75,7 @@ public class ReactiveSAClient implements Client {
 		log.info("Getting latest page for {}", thread.toString());
 		return postsPageContent(thread, 1)
 			.map(PostsPage::getMaxPageNum)
-			.flatMap(optPageNum -> optPageNum.isPresent() ? Mono.just(optPageNum.get()) : Mono.empty());
+			.flatMap(optPageNum -> optPageNum.map(Mono::just).orElseGet(Mono::empty));
 	}
 
 	public Mono<String> retrieveBodyAsMono(String url) {

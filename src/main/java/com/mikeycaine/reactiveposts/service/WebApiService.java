@@ -10,6 +10,7 @@ import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
 import com.mikeycaine.reactiveposts.webapi.ForumNotFoundException;
 import com.mikeycaine.reactiveposts.webapi.PostNotFoundException;
+import com.mikeycaine.reactiveposts.webapi.ThreadNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Flux;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,8 +56,8 @@ public class WebApiService {
 
 	public List<Thread> threadsForForum(int forumId) {
 		return forumRepository.findById(forumId)
-				.map(forum -> threadRepository.threadsForForum(forum))
-				.get();
+				.map(threadRepository::threadsForForum)
+				.orElseGet(() -> Collections.emptyList());
 	}
 
 	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
@@ -67,14 +69,13 @@ public class WebApiService {
 		int result = threadRepository.updateThreadSubscriptionStatus(threadId, newStatus);
 		log.info("Got result {}", result);
 		Optional<Thread> thread = threadRepository.findById(threadId);
-
-		// TODO handle the case where thread isnt found
-		return thread.get();
+		return thread.orElseThrow(() -> new ThreadNotFoundException(threadId));
 	}
 
 	public List<Post> postsForThreadPage(int threadId, int pageId) {
 		return threadRepository.findById(threadId)
-			.map(thread -> postRepository.getPostsForThreadPage(thread, pageId)).get();
+			.map(thread -> postRepository.getPostsForThreadPage(thread, pageId))
+			.orElseThrow(() -> new ThreadNotFoundException(threadId));
 	}
 
 	public URI fixPostURL(int postId) {

@@ -53,7 +53,7 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 
 	private Stream<Post> postStreamFromPage() {
 		return threadElementFromContent()
-			.map(threadElement -> postsFromThreadElement(threadElement))
+			.map(this::postsFromThreadElement)
 			.orElse(Stream.empty());
 	}
 
@@ -91,12 +91,12 @@ public class PostsPageContent extends AbstractContent<PostsPage> {
 			.stream()
 			.flatMap(title -> title.getElementsByTag("img").stream().map(element -> element.attr("src")));
 
-		final String titlePic = titlePix.findFirst().orElseGet(() -> "");
+		final String titlePic = titlePix.findFirst().orElse("");
 
 		final Stream<String> titleTexts = postElement
 			.getElementsByClass("title")
 			.stream()
-			.map(title -> title.text());
+			.map(Element::text);
 
 		final String titleText = titleTexts.collect(Collectors.joining("\n"));
 
