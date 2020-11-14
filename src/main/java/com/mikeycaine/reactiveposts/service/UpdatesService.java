@@ -5,6 +5,8 @@ import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -17,61 +19,48 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UpdatesService implements InitializingBean {
+public class UpdatesService /*implements InitializingBean */{
 
 	private final ForumsService forumsService;
+	private final UpdatesConfig config;
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
 
-	private final UpdatesConfig config;
-
-	private Duration threadsUpdateInitialDelay;
-	private Duration threadsUpdateInterval;
-	private int threadsUpdateMaxRetries;
-
-	private Duration postsUpdateInitialDelay;
-	private Duration postsUpdateInterval;
-	private int postsUpdateMaxRetries;
-
-	@Override
-	public void afterPropertiesSet() {
-		threadsUpdateInitialDelay = config.getThreadsUpdateInitialDelay();
-		threadsUpdateInterval = config.getThreadsUpdateInterval();
-		threadsUpdateMaxRetries = config.getThreadsUpdateMaxRetries();
-
-		postsUpdateInitialDelay = config.getPostsUpdateInitialDelay();
-		postsUpdateInterval = config.getPostsUpdateInterval();
-		postsUpdateMaxRetries = config.getPostsUpdateMaxRetries();
-
+	@EventListener(ApplicationReadyEvent.class)
+	public void applicationReadyListener() {
 		log.info("*********************************************************");
 		log.info("UPDATES SERVICE CONFIG");
-		log.info("threadsUpdateInitialDelay = {}", threadsUpdateInitialDelay);
-		log.info("threadsUpdateInterval = {}", threadsUpdateInterval);
-		log.info("threadsUpdateMaxRetries = {}", threadsUpdateMaxRetries);
-		log.info("postsUpdateInitialDelay = {}", postsUpdateInitialDelay);
-		log.info("postsUpdateInterval = {}", postsUpdateInterval);
-		log.info("postsUpdateMaxRetries = {}", postsUpdateMaxRetries);
+		log.info("threadsUpdateInitialDelay = {}",  config.getThreadsUpdateInitialDelay());
+		log.info("threadsUpdateInterval = {}",      config.getThreadsUpdateInterval());
+		log.info("threadsUpdateMaxRetries = {}",    config.getThreadsUpdateMaxRetries());
+		log.info("postsUpdateInitialDelay = {}",    config.getPostsUpdateInitialDelay());
+		log.info("postsUpdateInterval = {}",        config.getPostsUpdateInterval());
+		log.info("postsUpdateMaxRetries = {}",      config.getPostsUpdateMaxRetries());
 		log.info("*********************************************************");
 
+		updateForums();
+		startUpdating();
 	}
 
-	public void startThreadUpdates() {
+	void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
 		threadUpdates = Optional.of(
 			runUpdates(
 				forumsService::updateThreads,"threads",
-				threadsUpdateInitialDelay, threadsUpdateInterval, threadsUpdateMaxRetries)
-		);
+				config.getThreadsUpdateInitialDelay(),
+				config.getThreadsUpdateInterval(),
+				config.getThreadsUpdateMaxRetries()));
 	}
 
-	public void startPostUpdates() {
+	void startPostUpdates() {
 		postUpdates.ifPresent(Disposable::dispose);
 		postUpdates = Optional.of(
 			runUpdates(
 				forumsService::updatePosts,"posts",
-				postsUpdateInitialDelay, postsUpdateInterval, postsUpdateMaxRetries)
-		);
+				config.getPostsUpdateInitialDelay(),
+				config.getPostsUpdateInterval(),
+				config.getPostsUpdateMaxRetries()));
 	}
 
 	public void startUpdating() {

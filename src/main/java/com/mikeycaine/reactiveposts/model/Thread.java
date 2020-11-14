@@ -27,6 +27,7 @@ public class Thread {
 	@Setter
 	@ManyToOne
 	@JoinColumn(nullable = false)
+	@ToString.Include
 	private Forum forum;
 
 	@Getter
