@@ -6,7 +6,6 @@ import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.service.WebApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -48,5 +47,4 @@ public class WebApiController {
 	public List<Post> postsForThreadPage(@PathVariable int threadId, @PathVariable int pageId) {
 		return webApiService.postsForThreadPage(threadId, pageId);
 	}
-
 }

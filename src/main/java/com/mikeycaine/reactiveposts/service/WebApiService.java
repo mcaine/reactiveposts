@@ -1,5 +1,6 @@
 package com.mikeycaine.reactiveposts.service;
 
+import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
@@ -8,11 +9,15 @@ import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
 import com.mikeycaine.reactiveposts.webapi.ForumNotFoundException;
+import com.mikeycaine.reactiveposts.webapi.PostNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import javax.transaction.Transactional;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +30,7 @@ public class WebApiService {
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
 	private final AuthorRepository authorRepository;
+	private final ForumsService forumsService;
 
 	public List<Forum> topLevelForums() {
 		return forumRepository.topLevelForums();
@@ -33,20 +39,27 @@ public class WebApiService {
 	public Forum updateForumSubscriptionStatus(int forumId, boolean newStatus) {
 		log.info("Updating forum subscription status forum={} newStatus={}", forumId, newStatus);
 		int result = forumRepository.updateForumSubscriptionStatus(forumId, newStatus);
+		Optional<Forum> optForum = forumRepository.findById(forumId);
 		if (result == 1) {
 			log.info("...updated forum subscription status for forum={} to new status {}", forumId, newStatus);
+			if (newStatus) {
+				optForum.ifPresent(forum -> retrieveThreadsForForum(forum).subscribe());
+			}
 		} else {
 			log.error("FAILED to update forum subscription status for forum={}", forumId);
 		}
 
-		Optional<Forum> forum = forumRepository.findById(forumId);
-		return forum.orElseThrow(() -> new ForumNotFoundException(forumId));
+		return optForum.orElseThrow(() -> new ForumNotFoundException(forumId));
 	}
 
 	public List<Thread> threadsForForum(int forumId) {
 		return forumRepository.findById(forumId)
 				.map(forum -> threadRepository.threadsForForum(forum))
 				.get();
+	}
+
+	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
+		return forumsService.retrieveThreadsForForum(forum);
 	}
 
 	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
@@ -62,6 +75,18 @@ public class WebApiService {
 	public List<Post> postsForThreadPage(int threadId, int pageId) {
 		return threadRepository.findById(threadId)
 			.map(thread -> postRepository.getPostsForThreadPage(thread, pageId)).get();
+	}
 
+	public URI fixPostURL(int postId) {
+		return postRepository.findById(postId).map(post -> {
+			int threadId = post.getThread().getId();
+			int pageNum = post.getPageNum();
+			try {
+				URI uri = new URI(String.format("/thread/%d/page/%d?foo=bar#post%d", threadId, pageNum, postId));
+				log.info("URI for postId " + postId + " is " + uri);
+				return uri;
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}}).orElseThrow(()-> new PostNotFoundException(postId));
 	}
 }

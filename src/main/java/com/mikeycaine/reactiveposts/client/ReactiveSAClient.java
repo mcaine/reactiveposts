@@ -23,7 +23,7 @@ import static com.mikeycaine.reactiveposts.client.ValidationUtils.validatePageRa
 @RequiredArgsConstructor
 @Service
 public class ReactiveSAClient implements Client {
-	private final static int MAX_CONCURRENT_REQUESTS = 1;
+	private final static int MAX_CONCURRENT_REQUESTS = 10;
 
 	private final WebClient webClient;
 

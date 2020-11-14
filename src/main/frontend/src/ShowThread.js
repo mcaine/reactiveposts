@@ -8,7 +8,8 @@ class ShowThread extends Component {
     constructor() {
         super();
         this.state = {
-            posts: []
+            posts: [],
+            loaded: false
         };
     }
 
@@ -21,7 +22,7 @@ class ShowThread extends Component {
             .then(res => {
                 if (res.status === 200) {
                     let posts = [...res.data];
-                    this.setState({'posts' : posts});
+                    this.setState({'posts' : posts, loaded: true});
                 } else {
                     console.log("Got status " + res.status);
                 }
@@ -32,18 +33,44 @@ class ShowThread extends Component {
     }
 
     render() {
+        const threadId = this.props.match.params.threadId;
+        const pageId = parseInt(this.props.match.params.pageId);
+        let prevPage = pageId -1 ;
+        let nextPage = pageId + 1;
+        let backLink = `/thread/${threadId}/page/${prevPage}`;
+        let forwardLink = `/thread/${threadId}/page/${nextPage}`;
+        let back = prevPage > 0 ? <a href={backLink}>◄{prevPage}</a> : <span/>;
+        let forward = this.state.loaded && nextPage <= this.state.posts[0].thread.pagesGot ? <a href={forwardLink}>{nextPage}►</a> : <span/>;
+        let pageTitle = this.state.loaded ? this.state.posts[0].thread.name + ' page ' + this.props.match.params.pageId : "";
+        let forumId = this.state.loaded ?  this.state.posts[0].thread.forum.id: -1;
+        let forumName = this.state.loaded ?  this.state.posts[0].thread.forum.name: -1;
+        let forumLink = `/forum/${forumId}`;
+
+        let controls =
+            <Table bordered>
+            <tr>
+                <td>
+                    <div><a href ="/">FORUMS</a></div>
+                    <div>
+                    <span>{back}</span>   <span>{forward}</span>
+                    </div>
+                </td>
+                <div><a href={forumLink}>{forumName}</a></div>
+                <span><h3>{pageTitle}</h3></span>
+            </tr>
+            </Table>
+
         return (
-                <Table bordered>
-                    <thead>
-                    <tr>
-                        <th width={300}>Author</th>
-                        <th>Content</th>
-                    </tr>
-                    </thead>
+            <div>
+                {controls}
+
+                 <Table bordered>
                     <tbody>
                     {this.state.posts.map((post, i) => <PostRow key={post.id} post={post}/>)}
                     </tbody>
                 </Table>
+                {controls}
+            </div>
         );
     }
 }

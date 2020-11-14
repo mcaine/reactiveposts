@@ -16,6 +16,7 @@ import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.CorePublisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -58,10 +59,14 @@ public class ForumsService {
 		log.info("Updating threads for {} subscribed forum{}", subscribedForums.size(), (subscribedForums.size() == 1 ? "" : "s"));
 
 		return Flux.fromIterable(subscribedForums)
-			.flatMapSequential(forum -> client.retrieveThreads(forum, 1, config.getIndexDepth()), MAX_CONCURRENCY)
+			.flatMapSequential(forum -> retrieveThreadsForForum(forum), MAX_CONCURRENCY)
 			.doOnNext(threadsIndex -> {
 				threadsIndex.getThreads().forEach(this::mergeThreadInfo);
 			});
+	}
+
+	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
+		return client.retrieveThreads(forum, 1, config.getIndexDepth());
 	}
 
 	public Flux<PostsPage> updatePosts() {

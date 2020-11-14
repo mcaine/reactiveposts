@@ -25,7 +25,6 @@ public class Post {
 	@Getter @Setter
 	@ManyToOne
 	@JoinColumn(nullable = false)
-	@JsonIgnore
 	private Thread thread;
 
 	@Getter @Setter
