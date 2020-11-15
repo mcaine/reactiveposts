@@ -27,6 +27,7 @@ public class ThreadsIndexContent extends AbstractContent<ThreadsIndex> {
 
 	@Override
 	public ThreadsIndex parsed() {
+		ensureContentPresent();
 		return new ThreadsIndex(forum, pageNum, threadStreamFromPage().collect(Collectors.toUnmodifiableList()));
 	}
 

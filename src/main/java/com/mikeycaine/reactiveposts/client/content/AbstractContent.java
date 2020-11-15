@@ -1,5 +1,7 @@
 package com.mikeycaine.reactiveposts.client.content;
 
+import org.springframework.util.StringUtils;
+
 public abstract class AbstractContent<T> implements Content<T> {
 	final protected String content;
 
@@ -13,7 +15,7 @@ public abstract class AbstractContent<T> implements Content<T> {
 	}
 
 	public void ensureContentPresent() {
-		if (null == content || content.isEmpty() || content.isBlank()) {
+		if (!StringUtils.hasText(this.content)) {
 			throw new MissingContentException();
 		}
 	}

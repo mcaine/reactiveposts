@@ -22,6 +22,7 @@ public class MainForumIndexContent extends AbstractContent<MainForumIndex> {
 
 	@Override
 	public MainForumIndex parsed() {
+		ensureContentPresent();
 		return new MainForumIndex(forumStreamFromPage().collect(Collectors.toUnmodifiableList()));
 	}
 
