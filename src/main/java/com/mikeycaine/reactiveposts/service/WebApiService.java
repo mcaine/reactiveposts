@@ -31,7 +31,7 @@ public class WebApiService {
 	private final ForumRepository forumRepository;
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
-	private final AuthorRepository authorRepository;
+	//private final AuthorRepository authorRepository;
 	private final ForumsService forumsService;
 
 	public List<Forum> topLevelForums() {
