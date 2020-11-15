@@ -51,10 +51,6 @@ public class ForumsService {
 		}
 	}
 
-	public void reportForumCount() {
-		log.info(forumRepository.count() + " forums");
-	}
-
 	public Flux<ThreadsIndex> updateThreads() {
 		List<Forum> subscribedForums = forumRepository.subscribedForums();
 		log.info("Updating threads for {} subscribed forum{}", subscribedForums.size(), (subscribedForums.size() == 1 ? "" : "s"));
