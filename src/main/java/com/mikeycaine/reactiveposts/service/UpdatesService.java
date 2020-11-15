@@ -4,7 +4,6 @@ import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,7 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UpdatesService /*implements InitializingBean */{
+public class UpdatesService {
 
 	private final ForumsService forumsService;
 	private final UpdatesConfig config;
