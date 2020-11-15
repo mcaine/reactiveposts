@@ -92,7 +92,7 @@ public class UpdatesService /*implements InitializingBean */{
 			})
 			.retry(maxRetries)
 			.subscribe(
-				post -> {},
+				item -> {},
 				t -> log.error("FAILED when updating {}: {} ", what, t.getMessage())
 			);
 	}

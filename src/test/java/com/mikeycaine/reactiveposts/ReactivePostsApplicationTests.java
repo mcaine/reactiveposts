@@ -52,8 +52,7 @@ class ReactivePostsApplicationTests  {
 		Optional<Forum> optCspam = forumRepository.findById(CSPAM_FORUM_ID);
 		assertTrue(optCspam.isPresent(), "C-SPAM is missing WTF");
 
-		Forum cspam = optCspam.get();
-		forumsService.subscribeToForum(cspam);
+		forumsService.updateForumSubscriptionStatus(CSPAM_FORUM_ID, true);
 
 		StepVerifier.create(forumsService.updateThreads())
 			.expectNextCount(2)  // update gets 2 pages by default
@@ -65,7 +64,7 @@ class ReactivePostsApplicationTests  {
 		final Thread thread = threads.get(0);
 		log.info("found a thread " + thread);
 
-		forumsService.subscribeToThread(thread);
+		forumsService.updateThreadSubscriptionStatus(thread.getId(), true);
 
 		StepVerifier.create(forumsService.updatePosts())
 			.consumeNextWith(post -> log.info("Heres a posts page: " + post))
