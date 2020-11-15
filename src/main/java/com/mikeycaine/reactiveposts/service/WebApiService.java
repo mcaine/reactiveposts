@@ -39,27 +39,11 @@ public class WebApiService {
 	}
 
 	public Forum updateForumSubscriptionStatus(int forumId, boolean newStatus) {
-		log.info("Updating forum subscription status forum={} newStatus={}", forumId, newStatus);
-
-		Forum forum = forumRepository.findById(forumId)
-			.orElseThrow(() -> new ForumNotFoundException(forumId));
-
-		forum.setSubscribed(newStatus);
-		log.info("...updated forum subscription status for forum {}, status now {}", forumId, forum.isSubscribed());
-
-		return forum;
+		return forumsService.updateForumSubscriptionStatus(forumId, newStatus);
 	}
 
 	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
-		log.info("Updating thread subscription status thread={} newStatus={}", threadId, newStatus);
-
-		Thread thread = threadRepository.findById(threadId)
-			.orElseThrow(() -> new ThreadNotFoundException(threadId));
-
-		thread.setSubscribed(newStatus);
-		log.info("...updated thread subscription status for thread {}, status now {}", threadId, thread.isSubscribed());
-
-		return thread;
+		return forumsService.updateThreadSubscriptionStatus(threadId, newStatus);
 	}
 
 	public List<Thread> threadsForForum(int forumId) {

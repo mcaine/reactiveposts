@@ -13,6 +13,8 @@ import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
 import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
+import com.mikeycaine.reactiveposts.webapi.ForumNotFoundException;
+import com.mikeycaine.reactiveposts.webapi.ThreadNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -110,35 +112,27 @@ public class ForumsService {
 		}
 	}
 
-	public void subscribeToForum(Forum forum) {
-		updateForumSubscriptionStatus(forum, true);
+	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
+		log.info("Updating thread subscription status thread={} newStatus={}", threadId, newStatus);
+
+		Thread thread = threadRepository.findById(threadId)
+			.orElseThrow(() -> new ThreadNotFoundException(threadId));
+
+		thread.setSubscribed(newStatus);
+		log.info("...updated thread subscription status for thread {}, status now {}", threadId, thread.isSubscribed());
+
+		return thread;
 	}
 
-	public void unSubscribeFromForum(Forum forum) {
-		updateForumSubscriptionStatus(forum, false);
-	}
+	public Forum updateForumSubscriptionStatus(int forumId, boolean newStatus) {
+		log.info("Updating forum subscription status forum={} newStatus={}", forumId, newStatus);
 
-	public void subscribeToThread(Thread thread) {
-		updateThreadSubscriptionStatus(thread, true);
-	}
+		Forum forum = forumRepository.findById(forumId)
+			.orElseThrow(() -> new ForumNotFoundException(forumId));
 
-	public void unSubscribeFromThread(Thread thread) {
-		updateThreadSubscriptionStatus(thread, false);
-	}
+		forum.setSubscribed(newStatus);
+		log.info("...updated forum subscription status for forum {}, status now {}", forumId, forum.isSubscribed());
 
-	private void updateThreadSubscriptionStatus(Thread thread, boolean state) {
-		threadRepository.findById(thread.getId()).ifPresent(dbThread -> {
-			log.info("Subscribing to thread " + dbThread);
-			dbThread.setSubscribed(state);
-			threadRepository.save(dbThread);
-		});
-	}
-
-	private void updateForumSubscriptionStatus(Forum forum, boolean state) {
-		forumRepository.findById(forum.getId()).ifPresent(dbForum -> {
-			log.info("Subscribing to forum " + dbForum);
-			dbForum.setSubscribed(state);
-			forumRepository.save(dbForum);
-		});
+		return forum;
 	}
 }
