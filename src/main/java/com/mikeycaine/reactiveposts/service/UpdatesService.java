@@ -73,12 +73,12 @@ public class UpdatesService {
 		postUpdates.ifPresent(Disposable::dispose);
 	}
 
-	Disposable runUpdates (Supplier<Flux<?>> supplier, String what, Duration interval, int maxRetries) {
+	Disposable runUpdates(Supplier<Flux<?>> supplier, String what, Duration interval, int maxRetries) {
 		return Flux
 			.interval(interval)
 			.publishOn(Schedulers.elastic())
 			.flatMapSequential(l -> {
-				log.info("Updating {} [{}]", what,  l);
+				log.info("Updating {} [{}]", what, l);
 				return supplier.get();
 			})
 			.retry(maxRetries)
