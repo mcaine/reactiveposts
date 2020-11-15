@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import static org.springframework.http.HttpStatus.TEMPORARY_REDIRECT;
+import static org.springframework.http.HttpStatus.MOVED_PERMANENTLY;
 
 @RestController
 @Slf4j
@@ -20,7 +20,7 @@ public class PostLinkHandlingController {
 	@GetMapping("/showthread.php")
 	public Mono<Void> handleSALink(@RequestParam(name="postid") int postId, ServerHttpResponse response) {
 		log.info("Mapping SA link to post " + postId);
-		response.setStatusCode(TEMPORARY_REDIRECT);
+		response.setStatusCode(MOVED_PERMANENTLY);
 		response.getHeaders().setLocation(webApiService.fixPostURL(postId));
 		return response.setComplete();
 	}
