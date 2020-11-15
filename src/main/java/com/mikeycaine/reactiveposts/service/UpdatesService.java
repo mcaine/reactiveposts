@@ -31,16 +31,19 @@ public class UpdatesService /*implements InitializingBean */{
 	public void applicationReadyListener() {
 		log.info("*********************************************************");
 		log.info("UPDATES SERVICE CONFIG");
-		log.info("threadsUpdateInitialDelay = {}",  config.getThreadsUpdateInitialDelay());
 		log.info("threadsUpdateInterval = {}",      config.getThreadsUpdateInterval());
 		log.info("threadsUpdateMaxRetries = {}",    config.getThreadsUpdateMaxRetries());
-		log.info("postsUpdateInitialDelay = {}",    config.getPostsUpdateInitialDelay());
 		log.info("postsUpdateInterval = {}",        config.getPostsUpdateInterval());
 		log.info("postsUpdateMaxRetries = {}",      config.getPostsUpdateMaxRetries());
 		log.info("*********************************************************");
 
-		updateForums();
-		startUpdating();
+		forumsService.updateForums().subscribe(
+			mainForumIndex -> {
+				log.info("There are {} main forums", mainForumIndex.getForums().stream().filter(Forum::isTopLevelForum).count());
+				startUpdating();
+			},
+			t -> log.error("FAILED when getting list of forums: " + t.getMessage())
+		);
 	}
 
 	void startThreadUpdates() {
@@ -48,7 +51,6 @@ public class UpdatesService /*implements InitializingBean */{
 		threadUpdates = Optional.of(
 			runUpdates(
 				forumsService::updateThreads,"threads",
-				config.getThreadsUpdateInitialDelay(),
 				config.getThreadsUpdateInterval(),
 				config.getThreadsUpdateMaxRetries()));
 	}
@@ -58,7 +60,6 @@ public class UpdatesService /*implements InitializingBean */{
 		postUpdates = Optional.of(
 			runUpdates(
 				forumsService::updatePosts,"posts",
-				config.getPostsUpdateInitialDelay(),
 				config.getPostsUpdateInterval(),
 				config.getPostsUpdateMaxRetries()));
 	}
@@ -73,16 +74,17 @@ public class UpdatesService /*implements InitializingBean */{
 		postUpdates.ifPresent(Disposable::dispose);
 	}
 
-	public void updateForums() {
-		forumsService.updateForums().subscribe(
-			mainForumIndex -> log.info("There are {} main forums", mainForumIndex.getForums().stream().filter(Forum::isTopLevelForum).count()),
-			t -> log.error("FAILED when getting list of forums: " + t.getMessage())
-		);
-	}
+//	public void updateForums() {
+//		updateForums(() -> {});
+//	}
 
-	Disposable runUpdates (Supplier<Flux<?>> supplier, String what, Duration initialDelay, Duration interval, int maxRetries) {
+//	public void updateForums(Runnable runnable) {
+//
+//	}
+
+	Disposable runUpdates (Supplier<Flux<?>> supplier, String what, Duration interval, int maxRetries) {
 		return Flux
-			.interval(initialDelay, interval)
+			.interval(interval)
 			.publishOn(Schedulers.elastic())
 			.flatMapSequential(l -> {
 				log.info("Updating {} [{}]", what,  l);
