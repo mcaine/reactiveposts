@@ -1,10 +1,8 @@
 package com.mikeycaine.reactiveposts.service;
 
-import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.Forum;
 import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
-import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
@@ -14,14 +12,11 @@ import com.mikeycaine.reactiveposts.webapi.ThreadNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +26,6 @@ public class WebApiService {
 	private final ForumRepository forumRepository;
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
-	//private final AuthorRepository authorRepository;
 	private final ForumsService forumsService;
 
 	public List<Forum> topLevelForums() {
