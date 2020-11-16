@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "reactiveposts")
-public class UpdatesConfig {
+public class PostCachingConfig {
 
 	/* Updating the forum's index of threads for subscribed forums*/
 
@@ -32,4 +32,8 @@ public class UpdatesConfig {
 	/** How many pages of a forums index to acquire each time we update */
 	@Getter @Setter
 	private int indexDepth = 1;
+
+	/** Whether to run updates */
+	@Getter @Setter
+	private boolean runUpdates = false;
 }

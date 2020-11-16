@@ -1,7 +1,7 @@
 package com.mikeycaine.reactiveposts;
 
 import com.mikeycaine.reactiveposts.model.Forum;
-import com.mikeycaine.reactiveposts.service.ForumsService;
+import com.mikeycaine.reactiveposts.service.PostCachingService;
 import com.mikeycaine.reactiveposts.service.WebApiService;
 import com.mikeycaine.reactiveposts.webapi.ForumNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,14 +16,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class WebApiTest {
 
 	@Autowired
-	ForumsService forumsService;
+	WebApiService webApiService;
 
 	@Autowired
-	WebApiService webApiService;
+	PostCachingService postCachingService;
 
 	@BeforeEach
 	public void makeSureForumsArePresent() {
-		StepVerifier.create(forumsService.updateForums())
+		StepVerifier.create(postCachingService.updateForums())
 			.expectNextCount(1)
 			.verifyComplete();
 	}

@@ -7,6 +7,7 @@ import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
 import com.mikeycaine.reactiveposts.service.ForumsService;
+import com.mikeycaine.reactiveposts.service.PostCachingService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,24 +40,28 @@ class ReactivePostsApplicationTests  {
 	@Autowired
 	ForumsService forumsService;
 
+	@Autowired
+	PostCachingService postCachingService;
+
 	@Test
 	void contextLoads() {
 	}
 
 	@Test
 	void testIt() throws Exception {
-		StepVerifier.create(forumsService.updateForums())
-			.expectNextCount(1)
-			.verifyComplete();
+		postCachingService.waitForForumsListToLoad();
 
-		Optional<Forum> optCspam = forumRepository.findById(CSPAM_FORUM_ID);
-		assertTrue(optCspam.isPresent(), "C-SPAM is missing WTF");
+		log.info("There are " + forumsService.getForumsCount() + " forums");
+
+		Forum cspam = forumsService.findForumById(CSPAM_FORUM_ID);
 
 		forumsService.updateForumSubscriptionStatus(CSPAM_FORUM_ID, true);
 
-		StepVerifier.create(forumsService.updateThreads())
+		StepVerifier.create(postCachingService.updateThreads())
 			.expectNextCount(2)  // update gets 2 pages by default
 			.verifyComplete();
+
+		assertTrue(authorRepository.count() > 0);
 
 		List<Thread> threads = threadRepository.findAll();
 		assertTrue(threads.size() == 80);
@@ -66,7 +71,7 @@ class ReactivePostsApplicationTests  {
 
 		forumsService.updateThreadSubscriptionStatus(thread.getId(), true);
 
-		StepVerifier.create(forumsService.updatePosts())
+		StepVerifier.create(postCachingService.updatePosts())
 			.consumeNextWith(post -> log.info("Heres a posts page: " + post))
 			.verifyComplete();
 

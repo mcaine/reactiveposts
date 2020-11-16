@@ -1,31 +1,22 @@
 package com.mikeycaine.reactiveposts.service;
 
-import com.mikeycaine.reactiveposts.client.Client;
-import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
-import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
 import com.mikeycaine.reactiveposts.repos.PostRepository;
 import com.mikeycaine.reactiveposts.repos.ThreadRepository;
-import com.mikeycaine.reactiveposts.service.config.UpdatesConfig;
 import com.mikeycaine.reactiveposts.webapi.ForumNotFoundException;
 import com.mikeycaine.reactiveposts.webapi.ThreadNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import javax.transaction.Transactional;
-
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,76 +27,75 @@ public class ForumsService {
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
 	private final AuthorRepository authorRepository;
-	private final UpdatesConfig config;
-	private final Client client;
 
-	final int MAX_CONCURRENCY = 1;
+	public long getForumsCount() {
+		return forumRepository.count();
+	}
 
-	public Mono<MainForumIndex> updateForums() {
-		if (forumRepository.count() == 0) {
-			log.info("No forums found, initialising...");
-			Mono<MainForumIndex> mainForumIndexMono = client.retrieveMainForumIndex();
-			return mainForumIndexMono.doOnNext(mainForumIndex -> forumRepository.saveAll(mainForumIndex.getForums()));
-		} else {
-			return Mono.just(new MainForumIndex(forumRepository.findAll()));
+	public List<Forum> saveAll(List<Forum> forums) {
+		return forumRepository.saveAll(forums);
+	}
+
+	public Forum findForumById(int forumId) {
+		return forumRepository.findById(forumId).orElseThrow(() -> new ForumNotFoundException(forumId));
+	}
+
+	public List<Forum> findAll() {
+		return forumRepository.findAll();
+	}
+
+	public List<Forum> subscribedForums() {
+		return forumRepository.subscribedForums();
+	}
+
+	public List<Thread> subscribedThreads() {
+		return threadRepository.subscribedThreads();
+	}
+
+	public PostsPage persistsPostsPage(PostsPage postsPage) {
+		Thread thread = postsPage.getThread();
+		int pageNum = postsPage.getPageNum();
+
+		if (pageNum < thread.getMaxPageNumber()) {
+			thread.setPagesGot(pageNum);
+			threadRepository.save(thread);
 		}
+
+		postsPage.getMaxPageNum().ifPresent(maxPageNum -> {
+			thread.setMaxPageNumber(maxPageNum);
+			threadRepository.save(thread);
+		});
+
+		postsPage.getPosts().forEach(post -> {
+			Author newPostAuthor = post.getAuthor();
+			Author author = authorRepository.findById(newPostAuthor.getId()).map(dbAuthor ->{
+				dbAuthor.setName(newPostAuthor.getName());
+				dbAuthor.setTitleText(newPostAuthor.getTitleText());
+				dbAuthor.setTitleURL(newPostAuthor.getTitleURL());
+				return dbAuthor;
+			}).orElse(authorRepository.save(newPostAuthor));
+			post.setAuthor(author);
+		});
+		log.info("Persisting {} posts for page {} (of {}) for {}", postsPage.getPosts().size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString());
+		postRepository.saveAll(postsPage.getPosts());
+		return postsPage;
 	}
 
-	public Flux<ThreadsIndex> updateThreads() {
-		List<Forum> subscribedForums = forumRepository.subscribedForums();
-		log.info("Updating threads for {} subscribed forum{}", subscribedForums.size(), (subscribedForums.size() == 1 ? "" : "s"));
-
-		return Flux.fromIterable(subscribedForums)
-			.flatMapSequential(this::retrieveThreadsForForum, MAX_CONCURRENCY)
-			.doOnNext(threadsIndex -> threadsIndex.getThreads().forEach(this::mergeThreadInfo));
-	}
-
-	public Flux<ThreadsIndex> retrieveThreadsForForum(Forum forum) {
-		return client.retrieveThreads(forum, 1, config.getIndexDepth());
-	}
-
-	public Flux<PostsPage> updatePosts() {
-		List<Thread> subscribedThreads = threadRepository.subscribedThreads();
-		log.info("Updating posts for {} subscribed thread{}", subscribedThreads.size(), (subscribedThreads.size() == 1 ? "" : "s"));
-
-		return Flux.fromIterable(subscribedThreads)
-			.flatMapSequential(thread -> {
-				log.debug("We are subscribed to {}...", thread.toString());
-				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
-					final int thisPage = thread.getPagesGot() + 1;
-					return client.retrievePosts(thread, thisPage)
-						.doOnNext(postsPage -> {
-							postsPage.getMaxPageNum().ifPresent(thread::setMaxPageNumber);
-							if (thisPage < thread.getMaxPageNumber()) {
-								thread.setPagesGot(thisPage);
-							}
-							List<Post> posts = postsPage.getPosts();
-							List<Author> postAuthors = posts.stream().map(Post::getAuthor).collect(Collectors.toList());
-							log.info("Persisting {} posts for page {} (of {}) for {}", posts.size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString());
-							authorRepository.saveAll(postAuthors);
-							postRepository.saveAll(posts);
-							threadRepository.save(thread);
-						});
-				} else {
-					return Mono.empty();
-				}
-			}, MAX_CONCURRENCY);
+	public ThreadsIndex persistThreadsIndex(ThreadsIndex threadsIndex) {
+		threadsIndex.getThreads().forEach(this::mergeThreadInfo);
+		return threadsIndex;
 	}
 
 	public Thread mergeThreadInfo(Thread thread) {
-		final Optional<Thread> optDBThread = threadRepository.findById(thread.getId());
-		if (optDBThread.isPresent()) {
-			final Thread dbThread = optDBThread.get();
+		Author author = authorRepository.findById(thread.getAuthor().getId())
+							.orElse(authorRepository.save(thread.getAuthor()));
+		thread.setAuthor(author);
+
+		return threadRepository.findById(thread.getId()).map(dbThread -> {
 			dbThread.setMaxPageNumber(thread.getMaxPageNumber());
 			dbThread.setName(thread.getName());
-			return threadRepository.save(dbThread);
-		} else {
-			Optional<Author> optDBAuthor = authorRepository.findById(thread.getAuthor().getId());
-			if (optDBAuthor.isEmpty()) {
-				authorRepository.save(thread.getAuthor());
-			}
-			return threadRepository.save(thread);
-		}
+			return dbThread;
+		}).orElseGet(() -> threadRepository.save(thread));
 	}
 
 	public Thread updateThreadSubscriptionStatus(int threadId, boolean newStatus) {
@@ -130,5 +120,9 @@ public class ForumsService {
 		log.info("...updated forum subscription status for forum {}, status now {}", forumId, forum.isSubscribed());
 
 		return forum;
+	}
+
+	public void logForums() {
+		forumRepository.topLevelForums().forEach(forum -> log.info(forum.prettyPrint()));
 	}
 }

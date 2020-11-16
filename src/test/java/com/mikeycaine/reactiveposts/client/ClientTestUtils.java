@@ -58,7 +58,6 @@ public class ClientTestUtils {
 		} catch (InterruptedException e) {
 			fail();
 		}
-
 	}
 
 	public void logPostsFlux(Flux<Post> postsFlux) {
