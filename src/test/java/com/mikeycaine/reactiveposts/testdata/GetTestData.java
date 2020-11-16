@@ -20,10 +20,12 @@ public class GetTestData implements TestDirectories {
 			ThreadTestPage.of(Thread.withId(3942499), 1),
 			ThreadTestPage.of(Thread.withId(3913301), 10), // what if a Big Mac
 			ThreadTestPage.of(Thread.withId(3946225), 3),
+			ThreadTestPage.of(Thread.withId(3946206), 1),
 
 			ForumIndexTestPage.of(new Forum(161, "Goons with Spoons"),  4),
 			ForumIndexTestPage.of(new Forum(192, "Inspect your gadgets"), 5),
-			ForumIndexTestPage.of(new Forum(273, "GBS"),6)
+			ForumIndexTestPage.of(new Forum(273, "GBS"),6),
+			ForumIndexTestPage.of(new Forum(273, "GBS"),1)
 		).forEach(TestPage::cachePage);
 	}
 }
