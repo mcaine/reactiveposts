@@ -22,10 +22,8 @@ public class WebApiTest {
 	PostCachingService postCachingService;
 
 	@BeforeEach
-	public void makeSureForumsArePresent() {
-		StepVerifier.create(postCachingService.updateForums())
-			.expectNextCount(1)
-			.verifyComplete();
+	public void makeSureForumsArePresent() throws InterruptedException {
+		postCachingService.waitForForumsListToLoad();
 	}
 
 	@Test
