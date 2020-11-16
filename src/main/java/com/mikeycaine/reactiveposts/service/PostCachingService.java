@@ -140,7 +140,7 @@ public class PostCachingService {
 
 	private Disposable runUpdates(Supplier<Flux<?>> supplier, String what, Duration interval, int maxRetries) {
 		return Flux
-			.interval(interval)
+			.interval(Duration.ofSeconds(1), interval)
 			.publishOn(Schedulers.elastic())
 			.flatMapSequential(l -> {
 				log.info("Updating {} [{}]", what, l);
