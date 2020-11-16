@@ -56,15 +56,15 @@ public class ForumsService {
 		Thread thread = postsPage.getThread();
 		int pageNum = postsPage.getPageNum();
 
-		if (pageNum < thread.getMaxPageNumber()) {
-			thread.setPagesGot(pageNum);
-			threadRepository.save(thread);
-		}
-
 		postsPage.getMaxPageNum().ifPresent(maxPageNum -> {
 			thread.setMaxPageNumber(maxPageNum);
 			threadRepository.save(thread);
 		});
+
+		if (pageNum < thread.getMaxPageNumber()) {
+			thread.setPagesGot(pageNum);
+			threadRepository.save(thread);
+		}
 
 		postsPage.getPosts().forEach(post -> {
 			Author newPostAuthor = post.getAuthor();
