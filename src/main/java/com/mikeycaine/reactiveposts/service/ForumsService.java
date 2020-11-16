@@ -4,6 +4,7 @@ import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
 import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.repos.AuthorRepository;
 import com.mikeycaine.reactiveposts.repos.ForumRepository;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,30 @@ public class ForumsService {
 	private final PostRepository postRepository;
 	private final ThreadRepository threadRepository;
 	private final AuthorRepository authorRepository;
+
+	public void clean() {
+		postRepository.deleteAll();
+		threadRepository.deleteAll();
+		authorRepository.deleteAll();
+	}
+
+	public void reportCounts() {
+		log.info(authorRepository.count() + " authors");
+		log.info(threadRepository.count() + " threads");
+		log.info(postRepository.count() + " posts");
+	}
+
+	public List<Author> allAuthors() {
+		return authorRepository.findAll();
+	}
+
+	public Optional<Author> findAuthorWithId(int authorId) {
+		return authorRepository.findById(authorId);
+	}
+
+	public List<Post> allPosts() {
+		return postRepository.findAll();
+	}
 
 	public long getForumsCount() {
 		return forumRepository.count();
@@ -52,7 +79,7 @@ public class ForumsService {
 		return threadRepository.subscribedThreads();
 	}
 
-	public PostsPage persistsPostsPage(PostsPage postsPage) {
+	public PostsPage persistPostsPage(PostsPage postsPage) {
 		Thread thread = postsPage.getThread();
 		int pageNum = postsPage.getPageNum();
 
@@ -66,16 +93,9 @@ public class ForumsService {
 			threadRepository.save(thread);
 		}
 
-		postsPage.getPosts().forEach(post -> {
-			Author newPostAuthor = post.getAuthor();
-			Author author = authorRepository.findById(newPostAuthor.getId()).map(dbAuthor ->{
-				dbAuthor.setName(newPostAuthor.getName());
-				dbAuthor.setTitleText(newPostAuthor.getTitleText());
-				dbAuthor.setTitleURL(newPostAuthor.getTitleURL());
-				return dbAuthor;
-			}).orElse(authorRepository.save(newPostAuthor));
-			post.setAuthor(author);
-		});
+		List<Author> authors = postsPage.getPosts().stream().map(Post::getAuthor).distinct().collect(Collectors.toList());
+		authorRepository.saveAll(authors);
+
 		log.info("Persisting {} posts for page {} (of {}) for {}", postsPage.getPosts().size(), postsPage.getPageNum(), thread.getMaxPageNumber(), thread.toString());
 		postRepository.saveAll(postsPage.getPosts());
 		return postsPage;
@@ -88,12 +108,13 @@ public class ForumsService {
 
 	public Thread mergeThreadInfo(Thread thread) {
 		Author author = authorRepository.findById(thread.getAuthor().getId())
-							.orElse(authorRepository.save(thread.getAuthor()));
+							.orElseGet(() -> authorRepository.save(thread.getAuthor()));
 		thread.setAuthor(author);
 
 		return threadRepository.findById(thread.getId()).map(dbThread -> {
 			dbThread.setMaxPageNumber(thread.getMaxPageNumber());
 			dbThread.setName(thread.getName());
+			dbThread.setAuthor(author);
 			return dbThread;
 		}).orElseGet(() -> threadRepository.save(thread));
 	}

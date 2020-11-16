@@ -59,4 +59,8 @@ abstract class TestPage<T> implements TestDirectories {
 			return Mono.empty();
 		}
 	}
+
+	public T cachedContent() {
+		return cachedContentMono().block();
+	}
 }

@@ -104,7 +104,7 @@ public class PostCachingService {
 					final int thisPage = thread.getPagesGot() + 1;
 					return client.retrievePosts(thread, thisPage)
 						.publishOn(Schedulers.elastic())
-						.map(forumsService::persistsPostsPage);
+						.map(forumsService::persistPostsPage);
 				} else {
 					return Mono.empty();
 				}

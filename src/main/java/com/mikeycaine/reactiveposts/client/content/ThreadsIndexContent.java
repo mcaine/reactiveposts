@@ -47,7 +47,6 @@ public class ThreadsIndexContent extends AbstractContent<ThreadsIndex> {
 			.flatMap(this::parseThreadElement);
 	}
 
-
 	private Optional<Element> forumElementFromResponseBody(String body) {
 		if (null == body || body.isEmpty() || body.isBlank()) {
 			return Optional.empty();

@@ -1,16 +1,20 @@
 package com.mikeycaine.reactiveposts.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode
+@NoArgsConstructor
 public class Thread {
+
+	public Thread(int id, String name, Forum forum) {
+		this.id = id;
+		this.name = name;
+		this.forum = forum;
+	}
 
 	@Id
 	@Getter

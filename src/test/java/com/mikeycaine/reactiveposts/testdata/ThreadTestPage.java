@@ -19,8 +19,7 @@ import java.nio.file.Path;
 
 @RequiredArgsConstructor
 @Slf4j
-public
-class ThreadTestPage extends TestPage<PostsPageContent> {
+public class ThreadTestPage extends TestPage<PostsPageContent> {
 	final Thread thread;
 	final int pageNum;
 
@@ -44,7 +43,7 @@ class ThreadTestPage extends TestPage<PostsPageContent> {
 	}
 
 	@Override
-	protected PostsPageContent result(String fileContent) {
+	public PostsPageContent result(String fileContent) {
 		return new PostsPageContent(fileContent, thread, pageNum);
 	}
 }

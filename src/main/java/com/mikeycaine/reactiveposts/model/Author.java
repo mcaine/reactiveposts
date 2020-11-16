@@ -3,6 +3,7 @@ package com.mikeycaine.reactiveposts.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class Author {
 
 	@Getter
