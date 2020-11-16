@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.mikeycaine</groupId>
 	<artifactId>reactiveposts</artifactId>
-	<version>0.2.3</version>
+	<version>0.2.4-SNAPSHOT</version>
 	<name>Reactive Posts</name>
 	<description>Getting posts using Mono/Flux</description>
 
@@ -25,7 +25,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/mcaine/reactiveposts.git</developerConnection>
-		<tag>reactiveposts-0.2.3</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
