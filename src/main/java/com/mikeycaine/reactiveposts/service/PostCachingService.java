@@ -89,6 +89,7 @@ public class PostCachingService {
 
 		return Flux.fromIterable(subscribedForums)
 			.flatMapSequential(this::retrieveThreadsForForum, MAX_CONCURRENCY)
+			.publishOn(Schedulers.elastic())
 			.map(forumsService::persistThreadsIndex);
 	}
 
@@ -101,7 +102,9 @@ public class PostCachingService {
 				log.debug("We are subscribed to {}...", thread.toString());
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
 					final int thisPage = thread.getPagesGot() + 1;
-					return client.retrievePosts(thread, thisPage).map(forumsService::persistsPostsPage);
+					return client.retrievePosts(thread, thisPage)
+						.publishOn(Schedulers.elastic())
+						.map(forumsService::persistsPostsPage);
 				} else {
 					return Mono.empty();
 				}
