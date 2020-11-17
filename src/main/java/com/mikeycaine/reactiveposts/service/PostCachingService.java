@@ -4,7 +4,9 @@ import com.mikeycaine.reactiveposts.client.Client;
 import com.mikeycaine.reactiveposts.client.content.parsed.MainForumIndex;
 import com.mikeycaine.reactiveposts.client.content.parsed.PostsPage;
 import com.mikeycaine.reactiveposts.client.content.parsed.ThreadsIndex;
+import com.mikeycaine.reactiveposts.model.Author;
 import com.mikeycaine.reactiveposts.model.Forum;
+import com.mikeycaine.reactiveposts.model.Post;
 import com.mikeycaine.reactiveposts.model.Thread;
 import com.mikeycaine.reactiveposts.service.config.PostCachingConfig;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,8 +23,11 @@ import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +54,7 @@ public class PostCachingService {
 		log.info("postsUpdateInterval = {}", config.getPostsUpdateInterval());
 		log.info("postsUpdateMaxRetries = {}", config.getPostsUpdateMaxRetries());
 		log.info("runUpdates = {}", config.isRunUpdates());
+		log.info("fixAuthors = {}", config.isFixAuthors());
 		log.info("*********************************************************");
 
 		updateForums().subscribe(
@@ -111,10 +118,64 @@ public class PostCachingService {
 			}, MAX_CONCURRENCY);
 	}
 
+	Flux<Void> fixAuthors() {
+		List<Author> authorsToFix = forumsService.findFixableAuthors();
+		if (authorsToFix.isEmpty()) {
+			log.info("No authors need fixing!");
+			return Flux.empty();
+		}
+
+		log.info(authorsToFix.size() + " to fix...");
+		//IntStream.range(0, Math.min(authorsToFix.size(), 9)).forEach(i -> log.info(authorsToFix.get(i).toString()));
+		boolean foundOne = false;
+		do {
+			int idxToFix = new Random().nextInt(authorsToFix.size());
+			Author authorToFix = authorsToFix.get(idxToFix);
+			log.info("Trying to fix " + authorToFix);
+
+			List<Post> posts = forumsService.findPostsByAuthor(authorToFix);
+			if (posts.size() > 0) {
+				Post postToUse = posts.get(new Random().nextInt(posts.size()));
+				//log.info("Trying post " + postToUse.toString());
+
+				client.retrievePosts(postToUse.getThread(), postToUse.getPageNum())
+					.publishOn(Schedulers.elastic())
+					.map((PostsPage pp) -> {
+						List<Post> usefulPosts = pp.getPosts().stream().filter(p -> p.getAuthor().equals(authorToFix))
+							.collect(Collectors.toList());
+						Post postToTry = usefulPosts.get(new Random().nextInt(usefulPosts.size()));
+						log.info("Trying to fix from post " + postToTry.getId());
+						String titleText = postToTry.getAuthor().getTitleText();
+						String titleUrl = postToTry.getAuthor().getTitleURL();
+
+						if (StringUtils.hasText(titleText) || StringUtils.hasText(titleUrl)) {
+							forumsService.setAuthorTitleAndUrl(authorToFix.getId(), titleText, titleUrl);
+						} else {
+							log.info("Can't fix this author");
+						}
+
+						log.info("title text = {}", postToTry.getAuthor().getTitleText());
+						log.info("title url = {}", postToTry.getAuthor().getTitleURL());
+						return postToTry;
+
+					}).subscribe();
+				foundOne = true;
+			} else {
+				log.info("No posts for this author");
+			}
+
+		} while (!foundOne);
+
+		return Flux.empty();
+	}
+
 	public void startUpdating() {
 		if (config.isRunUpdates()) {
 			startThreadUpdates();
 			startPostUpdates();
+		}
+		if (config.isFixAuthors()) {
+			startFixingAuthors();
 		}
 	}
 
@@ -139,6 +200,15 @@ public class PostCachingService {
 				this::updatePosts, "posts",
 				config.getPostsUpdateInterval(),
 				config.getPostsUpdateMaxRetries()));
+	}
+
+	private void startFixingAuthors() {
+		postUpdates.ifPresent(Disposable::dispose);
+		postUpdates = Optional.of(
+			runUpdates(
+				this::fixAuthors, "to fix authors",
+				Duration.ofSeconds(20),
+				5));
 	}
 
 	private Disposable runUpdates(Supplier<Flux<?>> supplier, String what, Duration interval, int maxRetries) {

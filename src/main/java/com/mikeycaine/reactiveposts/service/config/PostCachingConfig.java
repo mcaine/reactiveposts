@@ -36,4 +36,9 @@ public class PostCachingConfig {
 	/** Whether to run updates */
 	@Getter @Setter
 	private boolean runUpdates = false;
+
+	/** Whether to try to fix authors with missing title_text and titleurl */
+	@Getter @Setter
+	private boolean fixAuthors = false;
+
 }

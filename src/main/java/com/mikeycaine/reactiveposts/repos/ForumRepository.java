@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface ForumRepository extends JpaRepository<Forum, Integer>  {
 	@Query("SELECT f FROM Forum f WHERE f.subscribed=true")
-	List<Forum> subscribedForums();
+	public List<Forum> subscribedForums();
 
 	@Query("SELECT f FROM Forum f WHERE f.topLevelForum=true")
-	List<Forum> topLevelForums();
+	public List<Forum> topLevelForums();
 }

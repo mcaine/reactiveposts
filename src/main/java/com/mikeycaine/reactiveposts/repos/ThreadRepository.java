@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface ThreadRepository extends JpaRepository<Thread, Integer>  {
 	@Query("SELECT t FROM Thread t WHERE t.subscribed=true")
-	List<Thread> subscribedThreads();
+	public List<Thread> subscribedThreads();
 
 	@Query("SELECT t FROM Thread t WHERE t.forum = ?1 ORDER BY t.subscribed DESC, t.id DESC")
-	List<Thread> threadsForForum(Forum forum);
+	public List<Thread> threadsForForum(Forum forum);
 }

@@ -146,4 +146,19 @@ public class ForumsService {
 	public void logForums() {
 		forumRepository.topLevelForums().forEach(forum -> log.info(forum.prettyPrint()));
 	}
+
+	public List<Author> findFixableAuthors() {
+		return authorRepository.authorsWithoutTitle();
+	}
+
+	public List<Post> findPostsByAuthor(Author author) {
+		return postRepository.getPostsForAuthor(author);
+	}
+
+	public void setAuthorTitleAndUrl(Integer authorId, String titleText, String titleUrl) {
+		authorRepository.findById(authorId).ifPresent(author -> {
+			author.setTitleText(titleText);
+			author.setTitleURL(titleUrl);
+		});
+	}
 }
