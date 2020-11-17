@@ -148,7 +148,11 @@ public class ForumsService {
 	}
 
 	public List<Author> findFixableAuthors() {
-		return authorRepository.authorsWithoutTitle();
+		List<Author> authorsWithPosts = authorsWithPosts();
+		return authorRepository.authorsWithoutTitle()
+								.stream()
+								.filter(author -> authorsWithPosts.contains(author))
+								.collect(Collectors.toList());
 	}
 
 	public List<Post> findPostsByAuthor(Author author) {
@@ -160,5 +164,9 @@ public class ForumsService {
 			author.setTitleText(titleText);
 			author.setTitleURL(titleUrl);
 		});
+	}
+
+	public List<Author> authorsWithPosts() {
+		return authorRepository.authorsWithPosts();
 	}
 }

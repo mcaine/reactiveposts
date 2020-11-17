@@ -11,4 +11,7 @@ public interface AuthorRepository extends JpaRepository<Author, Integer> {
 
 	@Query("SELECT a FROM Author a WHERE a.titleText IS NULL AND a.titleURL IS NULL")
 	public List<Author> authorsWithoutTitle();
+
+	@Query("SELECT DISTINCT p.author FROM Post p")
+	List<Author> authorsWithPosts();
 }
