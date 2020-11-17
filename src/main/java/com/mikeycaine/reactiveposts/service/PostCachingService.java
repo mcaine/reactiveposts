@@ -124,34 +124,30 @@ public class PostCachingService {
 			log.info("No authors need fixing!");
 			return Flux.empty();
 		}
-
 		log.info(authorsToFix.size() + " to fix...");
-		//IntStream.range(0, Math.min(authorsToFix.size(), 9)).forEach(i -> log.info(authorsToFix.get(i).toString()));
 		boolean foundOne = false;
 		do {
 			int idxToFix = new Random().nextInt(authorsToFix.size());
 			Author authorToFix = authorsToFix.get(idxToFix);
-			log.info("Trying to fix " + authorToFix);
-
+			log.debug("Trying to fix " + authorToFix);
 			List<Post> posts = forumsService.findPostsByAuthor(authorToFix);
 			if (posts.size() > 0) {
 				Post postToUse = posts.get(new Random().nextInt(posts.size()));
-				//log.info("Trying post " + postToUse.toString());
-
 				client.retrievePosts(postToUse.getThread(), postToUse.getPageNum())
 					.publishOn(Schedulers.elastic())
 					.map((PostsPage pp) -> {
 						List<Post> usefulPosts = pp.getPosts().stream().filter(p -> p.getAuthor().equals(authorToFix))
 							.collect(Collectors.toList());
 						Post postToTry = usefulPosts.get(new Random().nextInt(usefulPosts.size()));
-						log.info("Trying to fix from post " + postToTry.getId());
+						log.debug("Trying to fix from post " + postToTry.getId());
 						String titleText = postToTry.getAuthor().getTitleText();
 						String titleUrl = postToTry.getAuthor().getTitleURL();
 
 						if (StringUtils.hasText(titleText) || StringUtils.hasText(titleUrl)) {
+							log.info("Fixing title text/URL for {}", authorToFix);
 							forumsService.setAuthorTitleAndUrl(authorToFix.getId(), titleText, titleUrl);
 						} else {
-							log.info("Can't fix this author");
+							log.debug("Can't fix this author");
 						}
 
 						log.info("title text = {}", postToTry.getAuthor().getTitleText());
@@ -207,7 +203,7 @@ public class PostCachingService {
 		postUpdates = Optional.of(
 			runUpdates(
 				this::fixAuthors, "to fix authors",
-				Duration.ofSeconds(20),
+				Duration.ofMinutes(10),
 				5));
 	}
 
