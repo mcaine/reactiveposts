@@ -5,3 +5,5 @@
 `kubectl create -f postgis-pvc.yml`
 
 `kubectl create -f postgis-deployment.yml`
+
+` kubectl apply -f reactiveposts-deployment.yml`
