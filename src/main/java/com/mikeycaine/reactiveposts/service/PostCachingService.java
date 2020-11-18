@@ -96,7 +96,6 @@ public class PostCachingService {
 
 		return Flux.fromIterable(subscribedForums)
 			.flatMapSequential(this::retrieveThreadsForForum, MAX_CONCURRENCY)
-			.publishOn(Schedulers.elastic())
 			.map(forumsService::persistThreadsIndex);
 	}
 
@@ -110,7 +109,6 @@ public class PostCachingService {
 				if (thread.getPagesGot() < thread.getMaxPageNumber()) {
 					final int thisPage = thread.getPagesGot() + 1;
 					return client.retrievePosts(thread, thisPage)
-						.publishOn(Schedulers.elastic())
 						.map(forumsService::persistPostsPage);
 				} else {
 					return Mono.empty();
@@ -134,7 +132,6 @@ public class PostCachingService {
 			if (posts.size() > 0) {
 				Post postToUse = posts.get(new Random().nextInt(posts.size()));
 				client.retrievePosts(postToUse.getThread(), postToUse.getPageNum())
-					.publishOn(Schedulers.elastic())
 					.map((PostsPage pp) -> {
 						List<Post> usefulPosts = pp.getPosts().stream().filter(p -> p.getAuthor().equals(authorToFix))
 							.collect(Collectors.toList());
@@ -210,7 +207,6 @@ public class PostCachingService {
 	private Disposable runUpdates(Supplier<Flux<?>> supplier, String what, Duration interval, int maxRetries) {
 		return Flux
 			.interval(Duration.ofSeconds(1), interval)
-			.publishOn(Schedulers.elastic())
 			.flatMapSequential(l -> {
 				log.info("Updating {} [{}]", what, l);
 				return supplier.get();
@@ -218,6 +214,7 @@ public class PostCachingService {
 			.retry(maxRetries)
 			.subscribe(
 				item -> {
+					log.info("Finished getting {}", what);
 				},
 				t -> log.error("FAILED when updating {}: {} ", what, t.getMessage())
 			);
