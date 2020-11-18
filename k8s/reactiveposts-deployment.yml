@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reactiveposts
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: reactiveposts
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reactiveposts
+spec:
+  selector:
+    matchLabels:
+      app: reactiveposts
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: reactiveposts
+    spec:
+      containers:
+        - image: gcr.io/badinko/reactiveposts:0.2.7
+          name: reactiveposts
+          env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgis-root-password
+                  key: password
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgis:5432/postsdb
+            - name: SPRING_PROFILES_ACTIVE
+              value: postgres
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+          ports:
+            - containerPort: 8080
+              name: reactiveposts
+          resources:
+            limits:
+              cpu: "350m"
+              memory: "600M"
+            requests:
+              cpu: "50m"
+              memory: "400M"
