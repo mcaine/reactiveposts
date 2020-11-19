@@ -18,7 +18,6 @@ import org.springframework.util.StringUtils;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.List;
@@ -27,7 +26,6 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +40,7 @@ public class PostCachingService {
 
 	private Optional<Disposable> threadUpdates = Optional.empty();
 	private Optional<Disposable> postUpdates = Optional.empty();
+	private Optional<Disposable> authorFixes = Optional.empty();
 
 	private final CountDownLatch forumListLoaded = new CountDownLatch(1);
 
@@ -53,6 +52,7 @@ public class PostCachingService {
 		log.info("threadsUpdateMaxRetries = {}", config.getThreadsUpdateMaxRetries());
 		log.info("postsUpdateInterval = {}", config.getPostsUpdateInterval());
 		log.info("postsUpdateMaxRetries = {}", config.getPostsUpdateMaxRetries());
+		log.info("indexDepth = {}", config.getIndexDepth());
 		log.info("runUpdates = {}", config.isRunUpdates());
 		log.info("fixAuthors = {}", config.isFixAuthors());
 		log.info("*********************************************************");
@@ -61,7 +61,7 @@ public class PostCachingService {
 			mainForumIndex -> {
 				log.info("There are {} main forums", mainForumIndex.getForums().stream().filter(Forum::isTopLevelForum).count());
 			},
-			t -> log.error("FAILED when getting list of forums: " + t.getMessage()),
+			t -> log.error("FAILED when getting list of forums: {}", t.getMessage()),
 			() -> {
 				forumListLoaded.countDown();
 				startUpdating();
@@ -177,6 +177,10 @@ public class PostCachingService {
 		postUpdates.ifPresent(Disposable::dispose);
 	}
 
+	public void stopFixingAuthors() {
+		authorFixes.ifPresent(Disposable::dispose);
+	}
+
 	private void startThreadUpdates() {
 		threadUpdates.ifPresent(Disposable::dispose);
 		threadUpdates = Optional.of(
@@ -196,8 +200,8 @@ public class PostCachingService {
 	}
 
 	private void startFixingAuthors() {
-		postUpdates.ifPresent(Disposable::dispose);
-		postUpdates = Optional.of(
+		authorFixes.ifPresent(Disposable::dispose);
+		authorFixes = Optional.of(
 			runUpdates(
 				this::fixAuthors, "to fix authors",
 				Duration.ofMinutes(10),
