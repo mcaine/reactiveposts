@@ -5,7 +5,9 @@ spring:
     kubernetes:
       reload:
         enabled: true
-        mode: polling
+        mode: event
+        monitoring-config-maps: true
       config:
         sources:
+          - namespace: default
           - name: reactiveposts
