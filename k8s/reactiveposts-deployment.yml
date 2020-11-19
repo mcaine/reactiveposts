@@ -39,7 +39,8 @@ spec:
               value: postgres
             - name: SPRING_DATASOURCE_USERNAME
               value: postgres
-            - name: REACTIVEPOSTS_POSTS_UPDATE_INTERVAL=30s
+            - name: REACTIVEPOSTS_POSTS_UPDATE_INTERVAL
+              value: 30s
           ports:
             - containerPort: 8080
               name: reactiveposts
