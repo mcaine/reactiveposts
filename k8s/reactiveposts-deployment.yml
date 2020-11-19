@@ -12,20 +12,18 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: reactiveposts-config
+  name: reactiveposts
 data:
-  application-kubernetes.properties: |
-    /* application config for GKE */
-    spring.jpa.hibernate.ddl-auto=validate
-    spring.datasource.url=jdbc:postgresql://postgis:5432/postsdb
-    spring.datasource.username=postgres
-    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect
-    spring.datasource.driver-class-name=org.postgresql.Driver
-    reactiveposts.threads-update-interval=30m
-    reactiveposts.threads-update-max-retries=2
-    reactiveposts.index-depth=2
-    reactiveposts.posts-update-interval=69s
-    reactiveposts.posts-update-max-retries=2
+    spring.jpa.hibernate.ddl-auto: validate
+    spring.datasource.url: jdbc:postgresql://postgis:5432/postsdb
+    spring.datasource.username: postgres
+    spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL9Dialect
+    spring.datasource.driver-class-name: org.postgresql.Driver
+    reactiveposts.threads-update-interval: "30m"
+    reactiveposts.threads-update-max-retries: "2"
+    reactiveposts.index-depth: "2"
+    reactiveposts.posts-update-interval: "69s"
+    reactiveposts.posts-update-max-retries: "2"
 ---
 apiVersion: apps/v1
 kind: Deployment
