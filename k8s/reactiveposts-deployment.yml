@@ -63,6 +63,8 @@ spec:
             httpGet:
               port: 8080
               path: /actuator/health/readiness
+            initialDelaySeconds: 120
+            successThreshold: 1
           livenessProbe:
             httpGet:
               port: 8080
@@ -71,3 +73,5 @@ spec:
             preStop:
               exec:
                 command: [ "sh", "-c", "sleep 10" ]
+      serviceAccountName: config-reader
+
