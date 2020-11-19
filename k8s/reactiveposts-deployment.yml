@@ -51,7 +51,7 @@ spec:
                   key: password
           ports:
             - containerPort: 8080
-              name: reactiveposts
+              name: http
           resources:
             limits:
               cpu: "350m"
@@ -63,12 +63,14 @@ spec:
             httpGet:
               port: 8080
               path: /actuator/health/readiness
-            initialDelaySeconds: 120
+            initialDelaySeconds: 180
             successThreshold: 1
           livenessProbe:
             httpGet:
               port: 8080
               path: /actuator/health/liveness
+            initialDelaySeconds: 60
+            successThreshold: 1
           lifecycle:
             preStop:
               exec:

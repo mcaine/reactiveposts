@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: reactiveposts
+  cloud:
+    kubernetes:
+      reload:
+        enabled: true
+        mode: polling
+      config:
+        sources:
+          - name: reactiveposts
