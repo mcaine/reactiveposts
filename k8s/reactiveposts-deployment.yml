@@ -9,6 +9,24 @@ spec:
     app: reactiveposts
   clusterIP: None
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reactiveposts-config
+data:
+  application-kubernetes.properties: |
+    /* application config for GKE */
+    spring.jpa.hibernate.ddl-auto=validate
+    spring.datasource.url=jdbc:postgresql://postgis:5432/postsdb
+    spring.datasource.username=postgres
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect
+    spring.datasource.driver-class-name=org.postgresql.Driver
+    reactiveposts.threads-update-interval=30m
+    reactiveposts.threads-update-max-retries=2
+    reactiveposts.index-depth=2
+    reactiveposts.posts-update-interval=69s
+    reactiveposts.posts-update-max-retries=2
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,7 +43,7 @@ spec:
         app: reactiveposts
     spec:
       containers:
-        - image: gcr.io/badinko/reactiveposts:0.2.7
+        - image: gcr.io/badinko/reactiveposts:0.2.8-SNAPSHOT
           name: reactiveposts
           env:
             - name: SPRING_DATASOURCE_PASSWORD
@@ -33,12 +51,6 @@ spec:
                 secretKeyRef:
                   name: postgis-root-password
                   key: password
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgis:5432/postsdb
-            - name: SPRING_PROFILES_ACTIVE
-              value: postgres
-            - name: SPRING_DATASOURCE_USERNAME
-              value: postgres
           ports:
             - containerPort: 8080
               name: reactiveposts
