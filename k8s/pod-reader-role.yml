@@ -5,5 +5,5 @@ metadata:
   name: pod-reader
 rules:
   - apiGroups: [""]
-    resources: ["pods","configmaps"]
+    resources: ["pods","configmaps", "endpoints"]
     verbs: ["get", "watch", "list"]
