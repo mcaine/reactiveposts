@@ -10,4 +10,4 @@ spring:
       config:
         sources:
           - namespace: default
-          - name: reactiveposts
+          - name: ${spring.application.name}
