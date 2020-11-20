@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: pod-reader
+  name: reactiveposts-pod-reader
   namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9,5 +9,5 @@ roleRef:
   name: pod-reader
 subjects:
   - kind: ServiceAccount
-    name: config-reader
+    name: reactiveposts
     namespace: default
