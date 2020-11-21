@@ -12,6 +12,8 @@ import com.mikeycaine.reactiveposts.service.config.PostCachingConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -44,10 +46,13 @@ public class PostCachingService {
 
 	private final CountDownLatch forumListLoaded = new CountDownLatch(1);
 
-	@EventListener(ApplicationReadyEvent.class)
+	@EventListener({
+		ApplicationReadyEvent.class,
+		RefreshScopeRefreshedEvent.class
+	})
 	public void applicationReadyListener() {
 		log.info("*********************************************************");
-		log.info("UPDATES SERVICE CONFIG");
+		log.info("POST CACHING SERVICE CONFIG");
 		log.info("threadsUpdateInterval = {}", config.getThreadsUpdateInterval());
 		log.info("threadsUpdateMaxRetries = {}", config.getThreadsUpdateMaxRetries());
 		log.info("postsUpdateInterval = {}", config.getPostsUpdateInterval());

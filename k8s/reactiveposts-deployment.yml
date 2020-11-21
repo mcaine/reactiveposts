@@ -25,7 +25,7 @@ spec:
         app: reactiveposts
     spec:
       containers:
-        - image: gcr.io/badinko/reactiveposts:0.2.7
+        - image: gcr.io/badinko/reactiveposts:0.2.16
           name: reactiveposts
           env:
             - name: SPRING_DATASOURCE_PASSWORD
@@ -33,21 +33,31 @@ spec:
                 secretKeyRef:
                   name: postgis-root-password
                   key: password
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgis:5432/postsdb
-            - name: SPRING_PROFILES_ACTIVE
-              value: postgres
-            - name: SPRING_DATASOURCE_USERNAME
-              value: postgres
-            - name: REACTIVEPOSTS_POSTS_UPDATE_INTERVAL
-              value: 30s
           ports:
             - containerPort: 8080
-              name: reactiveposts
+              name: http
           resources:
             limits:
-              cpu: "350m"
-              memory: "600M"
+              cpu: "200m"
+              memory: "500Mi"
             requests:
               cpu: "50m"
-              memory: "400M"
+              memory: "250Mi"
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/readiness
+            initialDelaySeconds: 180
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/liveness
+            initialDelaySeconds: 180
+            successThreshold: 1
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "sh", "-c", "sleep 10" ]
+      serviceAccountName: reactiveposts
+

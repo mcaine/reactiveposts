@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: reactiveposts
+  cloud:
+    kubernetes:
+      loadbalancer:
+        enabled: false
+      enabled: false
+      discovery:
+        enabled: false
+      reload:
+        enabled: true

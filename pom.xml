@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.mikeycaine</groupId>
 	<artifactId>reactiveposts</artifactId>
-	<version>0.2.8-SNAPSHOT</version>
+	<version>0.2.17-SNAPSHOT</version>
 	<name>Reactive Posts</name>
 	<description>Getting posts using Mono/Flux</description>
 
@@ -21,6 +21,7 @@
 		<yarn.version>v1.22.10</yarn.version>
 		<frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
 		<frontend-src-dir>${project.basedir}/src/main/frontend</frontend-src-dir>
+		<spring.cloud-version>Hoxton.SR8</spring.cloud-version>
 	</properties>
 
 	<scm>
@@ -28,7 +29,25 @@
 		<tag>HEAD</tag>
 	</scm>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring.cloud-version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-kubernetes-all</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
