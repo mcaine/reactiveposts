@@ -3,6 +3,7 @@ spring:
     name: reactiveposts
   cloud:
     kubernetes:
+      enabled: true
       reload:
         enabled: true
         mode: event
