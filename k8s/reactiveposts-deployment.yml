@@ -33,13 +33,17 @@ spec:
                 secretKeyRef:
                   name: postgis-root-password
                   key: password
+            - name: JAVA_OPTS
+              value: >-
+                    -XX:MaxMetaspaceSize=100M
+                    -XX:ReservedCodeCacheSize=100M
           ports:
             - containerPort: 8080
               name: http
           resources:
             limits:
-              cpu: "200m"
-              memory: "500Mi"
+              cpu: "1500m"
+              memory: "380Mi"
             requests:
               cpu: "50m"
               memory: "250Mi"
@@ -47,13 +51,13 @@ spec:
             httpGet:
               port: 8080
               path: /actuator/health/readiness
-            initialDelaySeconds: 180
+            initialDelaySeconds: 30
             successThreshold: 1
           livenessProbe:
             httpGet:
               port: 8080
               path: /actuator/health/liveness
-            initialDelaySeconds: 180
+            initialDelaySeconds: 30
             successThreshold: 1
           lifecycle:
             preStop:
